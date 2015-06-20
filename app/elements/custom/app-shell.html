@@ -1,0 +1,600 @@
+<dom-module id="app-shell">
+  <style>
+    :host {
+      display: block;
+      background: #040404 url('/images/Black_Texture___Ray_by_Ethenyl.jpg') center center no-repeat;
+      background-size: cover;
+    } 
+    canvas.emscripten { 
+				border: 0px none; 
+				margin: auto 0;
+        padding: 0;
+        width:100%;
+        height:100%;
+        min-width:360px;
+        min-height: 360px;
+		}
+    .main-drawer-panel:not([narrow]) [list-toggle] {
+      display: none;
+    }
+    paper-menu{overflow:auto;background-color:transparent;}
+    #navDrawerPanel{ 
+      --paper-drawer-panel-left-drawer-container: { background-color: rgba(0,0,0,0.9); };
+    }
+    #mainDrawerPanel{
+      --paper-drawer-panel-right-drawer-container: { background-color: rgba(0,0,0,0.2) !important; };
+      --paper-drawer-panel-left-drawer-container: { background-color: rgba(0,0,0,0.2) !important; };
+    }
+    paper-toolbar{
+      --paper-toolbar-background: linear-gradient(to bottom, rgba(0,0,0,0) 0%,rgba(0,0,0,1) 33%,rgba(0,0,0,1) 66%,rgba(0,0,0,0) 100%);
+    }
+    .heroItem{
+      position:relative;
+      margin-top:8px;
+      width:127px;
+      height:71px;
+    }
+    #heroSelectionDialog{
+      width:100%;
+      height:100%;
+      position:fixed;
+      left:0;
+      top:0;
+      margin:0;
+      background-color:rgba(0,0,0,0.9);
+    }
+    .heroListDiv{
+      cursor:pointer;
+      position:relative;
+      width:127px;
+      height:71px;
+      display:inline-block;
+      margin:2px;
+      padding:0;
+      transition: box-shadow 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .heroListDiv:hover{
+      box-shadow: 0 0px 8px 1px rgba(255,255,255, 0.9);
+    }
+    .heroImage{
+      background-color:black;
+      width:127px;
+      height:71px;
+    }
+    .heroName{
+      position:absolute;
+      width:100%;
+      bottom:0;
+      left:0;
+      text-align: center;
+      color:white;
+      text-shadow: -1px 0 0.2em black,0 1px 0.2em black,1px 0 0.2em black,0 -1px 0.2em black;
+    }
+    .itemSlotDiv{
+      position:relative;
+      color:white;
+      text-shadow: -1px 0 0.2em black,0 1px 0.2em black,1px 0 0.2em black,0 -1px 0.2em black;
+      width:127px;
+      height:84px;
+      margin:4px auto;
+      cursor:pointer;      
+    }
+    .itemSlotDiv div{
+      position:absolute;
+    }
+    .closeItemSlot{
+      padding:0;
+      position:absolute;
+      top:0;
+      right:0;
+      transition: all 0.2s;
+      border-radius: 50%;
+    }
+    .closeItemSlot:hover{
+      background-color: rgba(0,0,0,0.4);
+    }
+    .spinnerDiv{
+      width:100%;
+      text-align: center;
+      padding-top: 32px;
+      color:#c8c8c8;
+    }
+    .itemGrid{
+      width:164px;
+      height:109px;
+      margin:2px;
+      display:inline-block;
+    }
+    .itemName{color:white;bottom:0;width:100%;text-align: center;}
+    .itemSlot{color:#c8c8c8;top:0;left:3px;}
+    .toolbarInput{
+      color:white;
+      font-size:20px;
+      border:none;
+      background-color: transparent;
+    }
+    input:focus{
+      outline:none;
+    }
+    #aboutDialog{
+      
+    }
+  </style>
+  <template>
+    <iron-ajax auto url="//dotaflame.com/api/heroes" loading="{{loadingHeroes}}"
+    handle-as="json" last-response="{{heroes}}" on-response="heroesResponse"></iron-ajax>
+    
+    <iron-ajax id="econItemsAjax" url="{{econItemsUrl(hero.id)}}" loading="{{loadingEconItems}}"
+    handle-as="json" on-response="econItemsResponse"></iron-ajax>
+    
+    <paper-drawer-panel id="navDrawerPanel" responsive-width="1280px" 
+      default-selected="drawer" drawer-width="148px;">
+
+      <div class="layout vertical center" drawer>
+          <paper-toolbar>
+            <paper-icon-button icon="apps" on-tap="openHeroSelectionDialog"></paper-icon-button>
+          </paper-toolbar>
+          
+            <!-- List -->
+            <div hidden$="{{!loadingHeroes}}" class="spinnerDiv">
+              <paper-spinner active></paper-spinner>
+            </div>
+            
+            <div class="flex itemSlotContainer" style='overflow:auto;width:100%;'>
+              
+              <template is="dom-repeat" items="{{models}}">
+                  <div class="itemSlotDiv" on-tap="setItemSearch">
+                    <iron-image class="fit" sizing="contain" preload fade src="{{item.image}}"
+                      placeholder="//dotaflame.com/images/econ/default_item.png"></iron-image>
+                    <div class="itemName">{{item.name}}</div>
+                    <div class="itemSlot">{{capitalize(item.item_slot)}}</div>
+                    <paper-icon-button icon="close" on-tap="removeItem" class="closeItemSlot"></paper-icon-button>
+                  </div>
+              </template>
+              
+            <!--
+            <template is="dom-repeat" items="{{hero.ItemSlots}}">
+                <div class="itemSlotDiv">
+                  <iron-image class="itemImage" sizing="contain" preload fade src="//dotaflame.com/images/econ/default_item.png"></iron-image>
+                  <div class="heroName">{{capitalize(item.SlotName)}}</div>
+                </div>
+            </template>
+            -->
+            </div>
+      </div>
+
+      <paper-drawer-panel id="mainDrawerPanel" class="main-drawer-panel" right-drawer="{{!_isMobile}}" 
+        main responsive-width="900px" narrow="{{_isMobile}}" default-selected="drawer"
+          drawer-width="[[_computeListWidth(_isMobile)]]" drawer-toggle-attribute="list-toggle">
+
+        <paper-header-panel class="list-panel" drawer>
+
+          <!-- List Toolbar -->
+          <paper-toolbar>
+            <paper-icon-button icon="menu" paper-drawer-toggle></paper-icon-button>
+            <div class="title flex" hidden$="{{showItemSearch}}">{{hero.name}}</div>
+            <paper-icon-button icon="search" on-tap="openItemSearch"></paper-icon-button>
+            <div class="flex layout horizontal center" hidden$="{{!showItemSearch}}">
+              <input id="itemSearchInput" class="flex toolbarInput" is="iron-input" bind-value="{{itemSearchText::input}}">
+              <paper-icon-button icon="close" on-tap="closeItemSearch"></paper-icon-button>
+            </div>
+            <paper-icon-button icon="arrow-forward" list-toggle></paper-icon-button>
+          </paper-toolbar>
+
+          <!-- List -->
+          <div hidden$="{{heroChosen}}" class="spinnerDiv" on-tap="openHeroSelectionDialog">
+            Choose a Hero
+          </div>
+          <div hidden$="{{!loadingEconItems}}" class="spinnerDiv">
+            <paper-spinner active></paper-spinner>
+          </div>
+          
+          <div class="itemContainerDiv">
+          <template is="dom-repeat" items="{{econItems.items}}" filter="itemSearch" id="itemGridRepeat">
+            <div class="itemSlotDiv itemGrid" on-tap="addItem">
+              <iron-image class="fit" sizing="contain" preload fade src="{{item.image}}" placeholder="//dotaflame.com/images/econ/default_item.png"></iron-image>
+              <div class="itemName">{{item.name}}</div>
+              <div class="itemSlot">{{capitalize(item.item_slot)}}</div>
+              <paper-icon-button icon="more-vert" class="closeItemSlot" on-tap="itemInfo"></paper-icon-button>
+            </div>
+          </template>
+          </div>
+          
+        </paper-header-panel>
+
+        <paper-header-panel class="content-panel" main>
+
+          <!-- Main Toolbar -->
+          <paper-toolbar>
+            <paper-icon-button icon="arrow-back" list-toggle></paper-icon-button>
+            <div class="title flex">Flare Dota Model Viewer</div>
+            <paper-icon-button icon="share" on-tap="shareIconTap"></paper-icon-button>
+            <paper-icon-button icon="refresh" on-tap="refreshModelList"></paper-icon-button>
+            <paper-icon-button icon="more-vert" on-tap="openAboutDialog"></paper-icon-button>
+          </paper-toolbar>
+
+          <!-- Main Content -->
+          <div class="content fit layout vertical center" id='canvasDiv'
+            style="text-align:center;">
+            <canvas class="emscripten" id="canvas" oncontextmenu="event.preventDefault()"></canvas>
+            <p class="navbar-text" id="status" style="position:absolute;width:100%;">Working...</p>
+          </div>
+
+        </paper-header-panel>
+
+      </paper-drawer-panel>
+
+    </paper-drawer-panel>
+    
+    <paper-dialog id="heroSelectionDialog" entry-animation="scale-up-animation" 
+      exit-animation="fade-out-animation">
+      <div class="layout horizontal center" style="color:white;font-size:18px;">
+        <span class="flex">Choose a Hero</span>
+        <paper-icon-button icon="search" on-tap="openHeroSearch"></paper-icon-button>
+        <input id="heroSearchInput" class="toolbarInput" is="iron-input" style="width:80px;"
+          bind-value="{{heroSearchText::input}}">
+        <paper-icon-button icon="close" on-tap="closeHeroSearch"></paper-icon-button>
+        <span class="flex"></span>
+        <paper-icon-button icon="close" dialog-dismiss style="padding:0"></paper-icon-button>
+      </div>
+      <div style="padding: 0 24px 24px;">
+        <template is="dom-repeat" items="{{heroes}}" filter="heroFilter" id="heroGridRepeat">
+          <div class="heroListDiv" on-tap="heroTap">
+            <iron-image src="{{heroImageUrl(item.id)}}" class="heroImage" preload fade sizing="contain"></iron-image>
+            <div class="heroName">{{item.name}}</div>
+          </div>
+        </template>
+      </div>
+    </paper-dialog>
+    
+    <paper-dialog id="aboutDialog" entry-animation="scale-up-animation" 
+      exit-animation="fade-out-animation">
+      <h2>Flare Dota 2 Model Viewer</h2>
+      <paper-dialog-scrollable>
+        <div class="paper-font-title">About</div>
+        <p class="paper-font-body1">
+        Flare (Source 2 Model Viewer) by <a href="http://kennyzero.me/" target="_blank">Kenny</a>.<br>
+        Dota 2 is a registered trademark of Valve Corporation.<br>
+        </p>
+        <div class="paper-font-title">Bug Report & Feature Request</div>
+        <p class="paper-font-body1">
+          <a href="https://github.com/bongikairu/flare/issues">https://github.com/bongikairu/flare/issues</a>
+        </p>
+      </paper-dialog-scrollable>
+      <div class="buttons">
+        <paper-button dialog-dismiss>Close</paper-button>
+      </div>
+    </paper-dialog>
+    
+    <paper-toast id="appToast" duration="3000"
+                 text="">
+    </paper-toast>
+    
+  </template>
+
+  <script>
+    (function() {
+      Polymer({
+        is: 'app-shell',
+
+        properties: {
+          heroes:Array,
+          hero:Object,
+          heroChosen:{
+            type:Boolean,
+            value:false
+          },
+          models:{
+            type: Array,
+            value:function() {
+              return [];
+            }       
+          },
+          showItemSearch:{
+            type:Boolean,
+            value: false
+          },
+          itemSearchText:{
+            type:String,
+            value:'',
+            observer: 'itemSearchChanged'
+          },
+          heroSearchText:{
+            type:String,
+            value:'',
+            observer: 'heroSearchChanged'
+          }
+        },
+        listeners: {
+          'resize': 'setCanvasSize',
+        },
+        setCanvasSize: function(){
+          var w = this.$.canvasDiv.clientWidth;
+          var h = this.$.canvasDiv.clientHeight;
+          console.log('Canvas container size: ',w,h);
+          if(w>h){
+            this.$.canvas.style.width=h.toString()+'px';
+            this.$.canvas.style.height='';
+            //w=Math.round(w/h*2048);
+            //h=2048;
+          }else{
+            this.$.canvas.style.height=w.toString()+'px';
+            this.$.canvas.style.width='';
+            //h=Math.round(h/w*2048);
+            //w=2048;
+          }
+          //Set Canvas size if canvas is not forced to be square
+          //Module.setCanvasSize(w,h,false);
+          
+        },
+        observers: [
+          //'modelsChanged(models.*)'
+        ],
+        heroTap: function(e){
+          this.$.heroSelectionDialog.close();
+          this.$.navDrawerPanel.closeDrawer();
+          
+          this.heroChosen=true;
+          this.hero = e.model.item;
+          console.log('HeroChange: ', this.hero);
+          
+          this.$.econItemsAjax.generateRequest();
+        },
+        itemSearchChanged: function(n,o){
+          if(n==""){
+            this.cancelDebouncer('itemFilter');
+            this.$.itemGridRepeat.render();
+          }
+          else{
+            this.debounce('itemFilter', function() {
+             console.log('updateItemSearch: '+ n);
+             this.$.itemGridRepeat.render();
+            }, 300);
+          }
+        },
+        heroSearchChanged: function(n,o){
+          if(n==""){
+            this.cancelDebouncer('heroFilter');
+            this.$.heroGridRepeat.render();
+          }
+          else{
+            this.debounce('heroFilter', function() {
+             console.log('updateHeroSearch: '+ n);
+             this.$.heroGridRepeat.render();
+            }, 300);
+          }
+        },
+        itemSearch: function(item){
+          if(this.itemSearchText.length<2) return true;
+          //regex search
+          var regex = new RegExp(this.itemSearchText,'i');
+          if(item.name.search(regex)>=0) return true;
+          if('item_slot' in item && item.item_slot.search(regex)>=0) return true;
+          if('item_rarity' in item && item.item_rarity.search(regex)>=0) return true;
+          return false;
+        },
+        heroFilter: function(item){
+          if(this.heroSearchText.length<1) return true;
+          //regex search
+          var regex = new RegExp('\\b'+this.heroSearchText,'i');
+          if(item.name.search(regex)>=0) return true;
+          if('NameAliases' in item && item.NameAliases.search(regex)>=0) return true;
+          //if('item_rarity' in item && item.item_rarity.search(regex)>=0) return true;
+          return false;
+        },
+        openHeroSearch: function(){
+          this.$.heroSearchInput.focus();
+        },
+        closeHeroSearch: function(){
+          this.heroSearchText ='';
+        },
+        _computeListWidth: function(isMobile) {
+          // when in mobile screen size, make the list be 100% width to cover the whole screen
+          return isMobile ? '100%' : '360px';
+        },
+  
+        _listTap: function() {
+          this.$.mainDrawerPanel.closeDrawer();
+        },
+        openHeroSelectionDialog: function(){
+          this.$.heroSelectionDialog.open();
+        },
+        heroesResponse: function(r){
+          //console.log(r.detail.response);
+          //if(app.ready) this.heroid=1;
+          //else {console.log('app not ready')}
+          //this.refreshModelList();
+          this.$.heroSelectionDialog.open();
+        },
+        econItemsResponse: function(r){
+          for(var i in r.detail.response.items)
+          {
+            r.detail.response.items[i].image = '//dotaflame.com/images/'+r.detail.response.items[i].image_inventory+'.png';
+            if(!('item_slot' in r.detail.response.items[i])){
+              if(['default_item','wearable'].indexOf(r.detail.response.items[i].prefab)>-1){
+                r.detail.response.items[i].item_slot='weapon';
+              }
+              else if(r.detail.response.items[i].prefab=='bundle'){
+                r.detail.response.items[i].item_slot='set';
+              }
+            }
+          }
+          this.set('econItems',r.detail.response);
+          
+          console.log('econItemsResponse: ',this.econItems);
+          this.refreshModelList();
+        },
+        heroImageUrl:function(k){
+          return 'http://media.steampowered.com/apps/dota2/images/heroes/'+k+'_hphover.png';
+        },
+        updateModel: function(){
+          this.debounce('updateModel', function() {
+            this.notifyPath('models',this.models);
+            console.log(this.models);
+          }, 100);
+        },
+        clearModel: function(){
+          var count = Module.MC_ModelCount();
+          console.log('clearModel: ',count);
+          this.set('models',[]);
+          for (var v = count-1; v >= 0; v--) {
+            Module.MC_RemoveModel(Module.MC_GetModel(v));
+          }
+        },
+        addModel: function(o) {
+            if(o.model==undefined){
+              console.log('Cannot addModel (no model_player): ',o);
+              this.appMessage('Cannot equip item. Model not found!');
+              return;
+            }
+            
+            o.model = o.model.replace('.mdl','.vmdl_c');
+            if(o.item_slot=='hero'){
+              o.image = this.heroImageUrl(this.hero.id);
+            }
+            
+            console.log('addModel: ', o.item_slot, o.name);
+            this.push('models',o);
+            Module.MC_AddModel(o.model);
+            
+            this.appMessage(o.name+' equipped.');
+            //this.updateModel();
+        },
+        removeModel: function(o){
+          console.log('removeModel: ', o.item_slot, o.name);
+          this.splice('models',this.models.indexOf(o),1);
+          Module.MC_RemoveModel(o.model);
+          
+          this.appMessage(o.name+' removed.');
+          //this.updateModel();
+        },
+        removeItem: function(e){
+          e.stopPropagation();
+          console.log(e);
+          this.removeModel(e.model.item);
+        },
+        addItem: function(e){
+          //this.$.mainDrawerPanel.closeDrawer();
+          
+          var item = e.model.item;
+          console.log(item);
+          if(item.prefab=='bundle')
+          {
+            //handle bundle
+            this.clearModel();
+            this.addModel({name:this.hero.name, item_slot:'hero', model:this.hero.Model});
+            
+            var bundle=[];
+            for(var i in item.bundle){
+              bundle.push(i);
+            }
+            console.log('Bundle start: ',bundle);
+            for(var i in this.econItems.items){
+              var index = bundle.indexOf(this.econItems.items[i].name);
+              if(index>=0){
+                bundle.splice(index,1);
+                this.addItem({model:{item:this.econItems.items[i]}});
+              }
+            }
+            console.log('Bundle end: ',bundle);
+          }
+          else
+          {
+              //remove other item of same slot
+              //TODO
+              if('item_slot' in item){
+                for(var i in this.models){
+                  if(this.models[i].item_slot==item.item_slot){
+                    this.removeModel(this.models[i]);
+                    break;
+                  }
+                }
+              }
+              
+              //summons
+              if('visuals' in item){
+                if('asset_modifier0' in item.visuals){
+                  if(item.visuals.asset_modifier0.type=='entity_model'){
+                    item.model_player=item.visuals.asset_modifier0.modifier;
+                  }
+                }
+              }
+              
+              this.addModel({
+                  name: item.name, 
+                  item_slot: item.item_slot, 
+                  model:item.model_player,
+                  image:item.image
+              });
+            
+          }
+        },
+        itemInfo: function(e){
+          var item = e.model.item;
+          console.log(item);
+          e.stopPropagation();
+          this.appMessage('Item Data logged in the Console');
+        },
+        refreshModelList: function() {
+            this.clearModel();
+            this.setCanvasSize();
+            this.addModel({name:this.hero.name, item_slot:'hero', model:this.hero.Model});
+            for(var i in this.econItems.items)
+            {
+              if(this.econItems.items[i].prefab=='default_item' && 
+                'model_player' in this.econItems.items[i]){
+                  this.addItem({model:{item:this.econItems.items[i]}});
+                }
+            }
+        },
+        econItemsUrl: function(id){
+          return '//dotaflame.com/api/EconItems?hero='+id;
+        },
+        getItemTitle: function(item){
+          var title = item.name;
+          if('bundle' in item){
+            title+=' [Bundle]: ';
+            for(var i in item.bundle){
+              title+=i+', ';
+            }
+          }
+          return title;
+        },
+        getItemImageUrl:function(i){
+          return '//dotaflame.com/images/'+i+'.png';
+        },
+        capitalize: function(s){
+          if(s===undefined) return '';
+          return s.charAt(0).toUpperCase()+s.substring(1);
+        },
+        appMessage: function(msg){
+          this.$.appToast.text=msg;
+          this.$.appToast.show();
+        },
+        openItemSearch: function(){
+          this.showItemSearch=true;
+          this.$.itemSearchInput.focus();
+        },
+        closeItemSearch: function(){
+          this.showItemSearch=false;
+          this.itemSearchText='';
+        },
+        setItemSearch: function(e){
+          if(e.model.item.item_slot=='hero'){
+            this.$.heroSelectionDialog.open();
+            return;
+          }
+          
+          this.showItemSearch=true;
+          this.itemSearchText=this.capitalize(e.model.item.item_slot);
+        },
+        shareIconTap: function(){
+          this.appMessage('Sharing functionality not implemented yet!');
+        },
+        openAboutDialog: function(){
+          this.$.aboutDialog.open();
+        }
+      });
+    })();
+  </script>
+</dom-module>

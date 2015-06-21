@@ -191,7 +191,7 @@
           
           <div class="itemContainerDiv">
           <template is="dom-repeat" items="{{econItems.items}}" filter="itemSearch" id="itemGridRepeat">
-            <div class="itemSlotDiv itemGrid" on-tap="addItem">
+            <div class="itemSlotDiv itemGrid" on-tap="equipItem">
               <iron-image class="fit" sizing="contain" preload fade src="{{item.image}}" placeholder="//dotaflame.com/images/econ/default_item.png"></iron-image>
               <div class="itemName">{{item.name}}</div>
               <div class="itemSlot">{{capitalize(item.item_slot)}}</div>
@@ -217,7 +217,8 @@
           <div class="content fit layout vertical center" id='canvasDiv'
             style="text-align:center;">
             <canvas class="emscripten" id="canvas" oncontextmenu="event.preventDefault()"></canvas>
-            <p class="navbar-text" id="status" style="position:absolute;width:100%;">Working...</p>
+            <p class="navbar-text" id="status" style="position:absolute;width:100%;top: 40%;
+              background-color: rgba(0,0,0,0.5);">Working...</p>
           </div>
 
         </paper-header-panel>
@@ -247,8 +248,7 @@
       </div>
     </paper-dialog>
     
-    <paper-dialog id="aboutDialog" entry-animation="scale-up-animation" 
-      exit-animation="fade-out-animation">
+    <paper-dialog id="aboutDialog" entry-animation="scale-up-animation" exit-animation="fade-out-animation">
       <h2>Flare Dota 2 Model Viewer</h2>
       <paper-dialog-scrollable>
         <div class="paper-font-title">About</div>
@@ -402,28 +402,48 @@
           //if(app.ready) this.heroid=1;
           //else {console.log('app not ready')}
           //this.refreshModelList();
+          this.splice('heroes',0,0,{
+              id:'courier',
+              name:'Couriers',
+              item_slot: 'courier_flying',
+              Model: 'models/props_gameplay/donkey_wings.mdl'
+            },{
+              'id':'ward',
+              'name':'Wards',
+              item_slot: 'ward',
+              Model: 'models/items/wards/dire_ward_eye/dire_ward_eye.mdl'
+          });
           this.$.heroSelectionDialog.open();
         },
         econItemsResponse: function(r){
           for(var i in r.detail.response.items)
           {
             r.detail.response.items[i].image = '//dotaflame.com/images/'+r.detail.response.items[i].image_inventory+'.png';
-            if(!('item_slot' in r.detail.response.items[i])){
-              if(['default_item','wearable'].indexOf(r.detail.response.items[i].prefab)>-1){
-                r.detail.response.items[i].item_slot='weapon';
-              }
-              else if(r.detail.response.items[i].prefab=='bundle'){
-                r.detail.response.items[i].item_slot='set';
-              }
+            if(r.detail.response.items[i].prefab=='bundle'){
+              r.detail.response.items[i].item_slot='set';
             }
           }
           this.set('econItems',r.detail.response);
+          this.closeItemSearch();
           
           console.log('econItemsResponse: ',this.econItems);
           this.refreshModelList();
         },
         heroImageUrl:function(k){
+          if(k=='courier'){
+            return 'http://cdn.dota2.com/apps/dota2/images/items/courier_lg.png';
+          }else if(k=='ward'){
+            return 'http://cdn.dota2.com/apps/dota2/images/items/ward_observer_lg.png';
+          }
           return 'http://media.steampowered.com/apps/dota2/images/heroes/'+k+'_hphover.png';
+        },
+        econItemsUrl: function(id){
+          if(id=='courier'){
+            return '//dotaflame.com/api/EconItems?prefab='+id;
+          }else if(id=='ward'){
+            return '//dotaflame.com/api/EconItems?prefab='+id;
+          }
+          return '//dotaflame.com/api/EconItems?hero='+id;
         },
         updateModel: function(){
           this.debounce('updateModel', function() {
@@ -440,28 +460,23 @@
           }
         },
         addModel: function(o) {
-            if(o.model==undefined){
-              console.log('Cannot addModel (no model_player): ',o);
-              this.appMessage('Cannot equip item. Model not found!');
+            if(o._model==undefined){
+              console.log('Cannot addModel (no _model): ',o);
+              this.appMessage('Cannot equip '+o.name+'. Model not found!');
               return;
             }
             
-            o.model = o.model.replace('.mdl','.vmdl_c');
-            if(o.item_slot=='hero'){
-              o.image = this.heroImageUrl(this.hero.id);
-            }
+            o._model = o._model.replace('.mdl','.vmdl_c');
             
             console.log('addModel: ', o.item_slot, o.name);
+            console.log(o);
             this.push('models',o);
-            Module.MC_AddModel(o.model);
-            
-            this.appMessage(o.name+' equipped.');
-            //this.updateModel();
+            Module.MC_AddModel(o._model);
         },
         removeModel: function(o){
           console.log('removeModel: ', o.item_slot, o.name);
           this.splice('models',this.models.indexOf(o),1);
-          Module.MC_RemoveModel(o.model);
+          Module.MC_RemoveModel(o._model);
           
           this.appMessage(o.name+' removed.');
           //this.updateModel();
@@ -471,16 +486,57 @@
           console.log(e);
           this.removeModel(e.model.item);
         },
-        addItem: function(e){
+        addItem: function(item){
+          //summons
+          if('visuals' in item){
+            for(var am in item.visuals){
+              //wards, summons
+              if(item.visuals[am].type=='entity_model'){
+                item._model=item.visuals[am].modifier;
+              }
+              //courier
+              else if(item.visuals[am].type=='courier'){
+                if(item.visuals[am].asset=='radiant'){
+                  item._model=item.visuals[am].modifier;
+                  item.item_slot=item.visuals[am].type;
+                  this.addModel(JSON.parse(JSON.stringify(item)));
+                }
+              }
+              //courier_flying
+              else if(item.visuals[am].type=='courier_flying'){
+                if(item.visuals[am].asset=='radiant'){
+                  item._model=item.visuals[am].modifier;
+                  item.item_slot=item.visuals[am].type;
+                }
+              }
+            }
+          }
+          
+          //hero base model
+          if('Model' in item){
+            item._model = item.Model;
+            item.image = this.heroImageUrl(this.hero.id);
+            item.item_slot = 'hero';
+          }
+          
+          //items with models
+          if('model_player' in item){
+            item._model = item.model_player;
+          }
+          
+          this.addModel(item); //name,item_slot,_model,image
+        },
+        equipItem: function(e){
           //this.$.mainDrawerPanel.closeDrawer();
           
           var item = e.model.item;
-          console.log(item);
+          //console.log(item);
+          
           if(item.prefab=='bundle')
           {
             //handle bundle
             this.clearModel();
-            this.addModel({name:this.hero.name, item_slot:'hero', model:this.hero.Model});
+            this.addItem(this.hero);
             
             var bundle=[];
             for(var i in item.bundle){
@@ -491,41 +547,35 @@
               var index = bundle.indexOf(this.econItems.items[i].name);
               if(index>=0){
                 bundle.splice(index,1);
-                this.addItem({model:{item:this.econItems.items[i]}});
+                this.addItem(this.econItems.items[i]);
               }
             }
             console.log('Bundle end: ',bundle);
+            this.appMessage(item.name+' set equipped.');
+          }
+          else if('visuals' in item && !('model_player' in item))
+          {
+            //hnadle summons
+            this.clearModel();
+            this.addItem(item);
+            this.appMessage(item.name+' equipped.');
           }
           else
           {
-              //remove other item of same slot
-              //TODO
-              if('item_slot' in item){
-                for(var i in this.models){
-                  if(this.models[i].item_slot==item.item_slot){
-                    this.removeModel(this.models[i]);
-                    break;
-                  }
+            //remove other item of same slot
+            if('item_slot' in item){
+              for(var i in this.models){
+                if(this.models[i].item_slot==item.item_slot){
+                  this.removeModel(this.models[i]);
+                  break;
                 }
               }
-              
-              //summons
-              if('visuals' in item){
-                if('asset_modifier0' in item.visuals){
-                  if(item.visuals.asset_modifier0.type=='entity_model'){
-                    item.model_player=item.visuals.asset_modifier0.modifier;
-                  }
-                }
-              }
-              
-              this.addModel({
-                  name: item.name, 
-                  item_slot: item.item_slot, 
-                  model:item.model_player,
-                  image:item.image
-              });
+            }
             
+            this.addItem(item);
+            this.appMessage(item.name+' equipped.');
           }
+          
         },
         itemInfo: function(e){
           var item = e.model.item;
@@ -536,17 +586,14 @@
         refreshModelList: function() {
             this.clearModel();
             this.setCanvasSize();
-            this.addModel({name:this.hero.name, item_slot:'hero', model:this.hero.Model});
+            this.addItem(this.hero);
             for(var i in this.econItems.items)
             {
               if(this.econItems.items[i].prefab=='default_item' && 
                 'model_player' in this.econItems.items[i]){
-                  this.addItem({model:{item:this.econItems.items[i]}});
+                  this.addItem(this.econItems.items[i]);
                 }
             }
-        },
-        econItemsUrl: function(id){
-          return '//dotaflame.com/api/EconItems?hero='+id;
         },
         getItemTitle: function(item){
           var title = item.name;

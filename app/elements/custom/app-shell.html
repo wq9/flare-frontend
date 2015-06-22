@@ -2,7 +2,7 @@
   <style>
     :host {
       display: block;
-      background: #040404 url('/images/Black_Texture___Ray_by_Ethenyl.jpg') center center no-repeat;
+      background: #040404 url('/images/dashboard_background_png_mip0.jpg') center center no-repeat;
       background-size: cover;
     } 
     canvas.emscripten { 
@@ -54,7 +54,7 @@
       transition: box-shadow 0.28s cubic-bezier(0.4, 0, 0.2, 1);
     }
     .heroListDiv:hover{
-      box-shadow: 0 0px 8px 1px rgba(255,255,255, 0.9);
+      box-shadow: 0 0px 8px 1px rgba(255,255,255, 0.5);
     }
     .heroImage{
       background-color:black;
@@ -140,7 +140,7 @@
               <paper-spinner active></paper-spinner>
             </div>
             
-            <div class="flex itemSlotContainer" style='overflow:auto;width:100%;'>
+            <div class="flex itemSlotContainer" style='overflow:auto;width:100%;text-align:center;'>
               
               <template is="dom-repeat" items="{{models}}">
                   <div class="itemSlotDiv" on-tap="setItemSearch">
@@ -208,7 +208,7 @@
           <paper-toolbar>
             <paper-icon-button icon="arrow-back" list-toggle></paper-icon-button>
             <div class="title flex">Flare Dota Model Viewer</div>
-            <paper-icon-button icon="share" on-tap="shareIconTap"></paper-icon-button>
+            <paper-icon-button icon="social:share" on-tap="shareIconTap"></paper-icon-button>
             <paper-icon-button icon="refresh" on-tap="refreshModelList"></paper-icon-button>
             <paper-icon-button icon="more-vert" on-tap="openAboutDialog"></paper-icon-button>
           </paper-toolbar>
@@ -228,17 +228,18 @@
     </paper-drawer-panel>
     
     <paper-dialog id="heroSelectionDialog" entry-animation="scale-up-animation" 
-      exit-animation="fade-out-animation">
+      exit-animation="fade-out-animation" no-cancel-on-outside-click>
       <div class="layout horizontal center" style="color:white;font-size:18px;">
-        <span class="flex">Choose a Hero</span>
         <paper-icon-button icon="search" on-tap="openHeroSearch"></paper-icon-button>
-        <input id="heroSearchInput" class="toolbarInput" is="iron-input" style="width:80px;"
-          bind-value="{{heroSearchText::input}}">
+        <input id="heroSearchInput" class="toolbarInput" is="iron-input" style="width:64px;"
+          bind-value="{{heroSearchText::input}}" placeholder="Search">
         <paper-icon-button icon="close" on-tap="closeHeroSearch"></paper-icon-button>
+        <span class="flex"></span>
+        <span class="">Choose &darr;</span>
         <span class="flex"></span>
         <paper-icon-button icon="close" dialog-dismiss style="padding:0"></paper-icon-button>
       </div>
-      <div style="padding: 0 24px 24px;">
+      <div style="padding: 0 22px; text-align: center;">
         <template is="dom-repeat" items="{{heroes}}" filter="heroFilter" id="heroGridRepeat">
           <div class="heroListDiv" on-tap="heroTap">
             <iron-image src="{{heroImageUrl(item.id)}}" class="heroImage" preload fade sizing="contain"></iron-image>
@@ -248,7 +249,8 @@
       </div>
     </paper-dialog>
     
-    <paper-dialog id="aboutDialog" entry-animation="scale-up-animation" exit-animation="fade-out-animation">
+    <paper-dialog id="aboutDialog" entry-animation="scale-up-animation" exit-animation="fade-out-animation" 
+      no-cancel-on-outside-click>
       <h2>Flare Dota 2 Model Viewer</h2>
       <paper-dialog-scrollable>
         <div class="paper-font-title">About</div>
@@ -509,6 +511,11 @@
                   item.item_slot=item.visuals[am].type;
                 }
               }
+              //pet
+              else if(item.visuals[am].type=='pet'){
+                item._model=item.visuals[am].asset;
+                item.item_slot=item.visuals[am].type;
+              }
             }
           }
           
@@ -527,12 +534,18 @@
           this.addModel(item); //name,item_slot,_model,image
         },
         equipItem: function(e){
-          //this.$.mainDrawerPanel.closeDrawer();
-          
           var item = e.model.item;
+          if(item.item_class=='supply_crate'){
+            //handle supply crate...
+            this.appMessage(item.name+' cannot be equipped.');
+            return;
+          }
+          
           //console.log(item);
           
-          if(item.prefab=='bundle')
+          this.$.mainDrawerPanel.closeDrawer();
+          
+          if(item.item_class=='bundle')
           {
             //handle bundle
             this.clearModel();
@@ -555,10 +568,10 @@
           }
           else if('visuals' in item && !('model_player' in item))
           {
-            //hnadle summons
+            //handle summons, pet
             this.clearModel();
-            this.addItem(item);
             this.appMessage(item.name+' equipped.');
+            this.addItem(item);
           }
           else
           {
@@ -572,8 +585,8 @@
               }
             }
             
-            this.addItem(item);
             this.appMessage(item.name+' equipped.');
+            this.addItem(item);
           }
           
         },
@@ -584,6 +597,7 @@
           this.appMessage('Item Data logged in the Console');
         },
         refreshModelList: function() {
+            //this.$.status.innerHTML='';//clear status
             this.clearModel();
             this.setCanvasSize();
             this.addItem(this.hero);

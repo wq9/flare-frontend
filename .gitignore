@@ -5,6 +5,7 @@ bower_components
 
 app/raw.*
 app/images/touch
+app/images/cursor
 app/test
 app/favicon.ico
 app/manifest.json

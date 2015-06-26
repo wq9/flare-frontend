@@ -44,6 +44,15 @@
     }
     window.addEventListener('resize', setCanvasSize, true);
     
+    //handle mousewheel
+    function setCanvasZoom(e){
+    	var e = window.event || e; // old IE support
+      var delta = Math.max(-1, Math.min(1, (e.wheelDelta || -e.detail)));
+      //console.log(delta);
+      Module.SC_SetCamZoom(delta*-25);
+    }
+    document.getElementById('canvasDiv').addEventListener('mousewheel', setCanvasZoom, false);
+    document.getElementById('canvasDiv').addEventListener('DOMMouseScroll', setCanvasZoom, false);
     
     
   });

@@ -173,7 +173,8 @@
             <div class="title flex" hidden$="{{showItemSearch}}">{{hero.name}}</div>
             <paper-icon-button icon="search" on-tap="openItemSearch"></paper-icon-button>
             <div class="flex layout horizontal center" hidden$="{{!showItemSearch}}">
-              <input id="itemSearchInput" class="flex toolbarInput" is="iron-input" bind-value="{{itemSearchText::input}}">
+              <input id="itemSearchInput" class="flex toolbarInput" is="iron-input" 
+                bind-value="{{itemSearchText}}">
               <paper-icon-button icon="close" on-tap="closeItemSearch"></paper-icon-button>
             </div>
             <paper-icon-button icon="arrow-forward" list-toggle></paper-icon-button>
@@ -216,7 +217,7 @@
             style="text-align:center;">
             <canvas class="emscripten" id="canvas" oncontextmenu="event.preventDefault()"></canvas>
             <p class="navbar-text" id="status" on-tap="clearStatusDiv" style="position:absolute;width:100%;top: 40%;left:0;
-              background-color: rgba(0,0,0,0.5);">Working...</p>
+              background-color: rgba(0,0,0,0.5);color:white;">Working...</p>
           </div>
 
         </paper-header-panel>
@@ -230,7 +231,7 @@
       <div class="layout horizontal center" style="color:white;font-size:18px;">
         <paper-icon-button icon="search" on-tap="openHeroSearch"></paper-icon-button>
         <input id="heroSearchInput" class="toolbarInput" is="iron-input" style="width:64px;"
-          bind-value="{{heroSearchText::input}}" placeholder="Search">
+          value="{{heroSearchText::input}}" placeholder="Search">
         <paper-icon-button icon="close" on-tap="closeHeroSearch"></paper-icon-button>
         <span class="flex"></span>
         <span class="">Choose &darr;</span>
@@ -278,6 +279,10 @@
         properties: {
           heroes:Array,
           hero:Object,
+          ItemSlots:{
+            type: Object,
+            value:{}
+          },
           heroChosen:{
             type:Boolean,
             value:false
@@ -334,6 +339,14 @@
           
           this.heroChosen=true;
           this.hero = e.model.item;
+          
+          this.ItemSlots = {
+            'set':{'SlotIndex':-1,'SlotName':'set'}
+          };
+          for(var i in this.hero.ItemSlots){
+            this.ItemSlots[this.hero.ItemSlots[i].SlotName] = this.hero.ItemSlots[i];
+          }
+          this.set('ItemSlots',this.ItemSlots);
           console.log('HeroChange: ', this.hero);
           
           this.$.econItemsAjax.generateRequest();
@@ -418,11 +431,49 @@
         econItemsResponse: function(r){
           for(var i in r.detail.response.items)
           {
+            //handle styles
+            if("visuals" in r.detail.response.items[i] && 
+              "styles" in r.detail.response.items[i].visuals)
+            {
+              for(var j in r.detail.response.items[i].visuals.styles){
+                if("model_player" in r.detail.response.items[i].visuals.styles[j]){
+                  var temp = JSON.parse(JSON.stringify(r.detail.response.items[i]));
+                  temp.model_player = temp.visuals.styles[j].model_player;
+                  temp.name += " "+(parseInt(j)+1);
+                  if("alternate_icon" in temp.visuals.styles[j]){
+                    temp.image_inventory = temp.visuals.alternate_icons[
+                      parseInt(temp.visuals.styles[j].alternate_icon)].icon_path;
+                  }
+                  delete temp.visuals.styles;
+                  if(j>0){
+                    r.detail.response.items.push(temp);
+                  }
+                }
+              }
+            }
+          }
+          
+          for(var i in r.detail.response.items)
+          {
             r.detail.response.items[i].image = '//dotaflame.com/images/'+r.detail.response.items[i].image_inventory+'.png';
             if(r.detail.response.items[i].prefab=='bundle'){
               r.detail.response.items[i].item_slot='set';
             }
+            r.detail.response.items[i].SlotIndex = (r.detail.response.items[i].item_slot in this.ItemSlots ? this.ItemSlots[r.detail.response.items[i].item_slot].SlotIndex : 9);
           }
+          
+          r.detail.response.items.sort(function(a, b) {
+            if((a.SlotIndex-b.SlotIndex) != 0){
+              return (a.SlotIndex-b.SlotIndex);
+            }else if(a.name > b.name) {
+              return 1;
+            }else if (a.name < b.name) {
+              return -1;
+            }else{
+              return 0;
+            }
+          });
+          
           this.set('econItems',r.detail.response);
           this.closeItemSearch();
           
@@ -669,10 +720,10 @@
               break;
             case 'track':
               //button always 0 in firefox
-              if(d.sourceEvent.button==0){
-                Module.SC_SetCamRotationSpeed(-0.01*d.ddy,-0.01*d.ddx,0);
-              }else if(d.sourceEvent.button==1){
+              if(d.sourceEvent.button==1){
                 Module.SC_SetCamZoom(d.ddy);
+              }else{
+                Module.SC_SetCamRotationSpeed(-0.01*d.ddy,-0.01*d.ddx,0);
               }
               
               break;

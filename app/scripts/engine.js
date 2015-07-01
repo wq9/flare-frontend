@@ -3,6 +3,18 @@ var Module = {
     preRun: [],
     postRun: function() {
         console.log('postRun');
+        
+        //handle backspace
+        window.removeEventListener("keydown", GLFW.onKeydown, true);
+        GLFW.onKeydown = function(event) {
+            GLFW.onKeyChanged(event, 1);
+            if (event.keyCode === 8 || event.keyCode === 9) {
+                if(event.target.tagName === "INPUT") return;
+                event.preventDefault();
+            }
+        };
+        window.addEventListener("keydown", GLFW.onKeydown, true);
+        
         app.ready=true;
         //prepareUI();
     },

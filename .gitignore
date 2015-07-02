@@ -11,6 +11,5 @@ app/favicon.ico
 app/manifest.json
 app/sw-import.js
 
-gulpfile.js
 wct.*
 .jscsrc

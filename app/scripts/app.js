@@ -19,7 +19,7 @@
     console.log('WebComponentsReady');
     var fileref=document.createElement('script');
     fileref.setAttribute('type','text/javascript');
-    fileref.setAttribute('src', '/scripts/engine.js');
+    fileref.setAttribute('src', 'scripts/engine.js');
     document.getElementsByTagName('head')[0].appendChild(fileref);
     var fileref2=document.createElement('script');
     fileref2.setAttribute('type','text/javascript');
@@ -45,8 +45,8 @@
     window.addEventListener('resize', setCanvasSize, true);
     
     //handle mousewheel
-    function setCanvasZoom(e){
-    	var e = window.event || e; // old IE support
+    function setCanvasZoom(e2){
+    	var e = window.event || e2; // old IE support
       var delta = Math.max(-1, Math.min(1, (e.wheelDelta || -e.detail)));
       //console.log(delta);
       Module.SC_SetCamZoom(delta*-25);

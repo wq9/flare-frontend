@@ -206,7 +206,7 @@
           <!-- Main Toolbar -->
           <paper-toolbar>
             <paper-icon-button icon="arrow-back" list-toggle></paper-icon-button>
-            <div class="title flex">Flare Dota Model Viewer</div>
+            <div class="title flex">D2Armory</div>
             <paper-icon-button icon="social:share" on-tap="shareIconTap"></paper-icon-button>
             <paper-icon-button icon="refresh" on-tap="refreshModelList"></paper-icon-button>
             <paper-icon-button icon="more-vert" on-tap="openAboutDialog"></paper-icon-button>
@@ -250,11 +250,11 @@
     
     <paper-dialog id="aboutDialog" entry-animation="scale-up-animation" exit-animation="fade-out-animation" 
       no-cancel-on-outside-click>
-      <h2>Flare Dota 2 Model Viewer</h2>
+      <h2>D2Armory</h2>
       <paper-dialog-scrollable>
         <div class="paper-font-title">About</div>
         <p class="paper-font-body1">
-        Flare (Source 2 Model Viewer) by <a href="http://kennyzero.me/" target="_blank">Kenny</a>.<br>
+        D2Armory by <a href="http://kennyzero.me/" target="_blank">Kenny</a> and orb.<br>
         Dota 2 is a registered trademark of Valve Corporation.<br>
         </p>
         <div class="paper-font-title">Bug Report & Feature Request</div>
@@ -352,7 +352,7 @@
           this.$.econItemsAjax.generateRequest();
         },
         itemSearchChanged: function(n,o){
-          if(n==""){
+          if(n===""){
             this.cancelDebouncer('itemFilter');
             this.$.itemGridRepeat.render();
           }
@@ -364,7 +364,7 @@
           }
         },
         heroSearchChanged: function(n,o){
-          if(n==""){
+          if(n===""){
             this.cancelDebouncer('heroFilter');
             this.$.heroGridRepeat.render();
           }
@@ -457,7 +457,7 @@
           {
             r.detail.response.items[i].image = '//dotaflame.com/images/'+r.detail.response.items[i].image_inventory+'.png';
             
-            if(r.detail.response.items[i].prefab=='bundle'){
+            if(r.detail.response.items[i].prefab==='bundle'){
               r.detail.response.items[i].item_slot='set';
             }
             r.detail.response.items[i].SlotIndex = (r.detail.response.items[i].item_slot in this.ItemSlots ? 
@@ -472,9 +472,9 @@
           }
           
           r.detail.response.items.sort(function(a, b) {
-            if((a.SlotIndex-b.SlotIndex) != 0){
+            if((a.SlotIndex-b.SlotIndex) !== 0){
               return (a.SlotIndex-b.SlotIndex);
-            }else if((a.creation_date-b.creation_date) != 0){
+            }else if((a.creation_date-b.creation_date) !== 0){
               return a.creation_date-b.creation_date;
             }else if(a.name > b.name) {
               return 1;
@@ -492,17 +492,17 @@
           this.refreshModelList();
         },
         heroImageUrl:function(k){
-          if(k=='courier'){
+          if(k==='courier'){
             return 'http://cdn.dota2.com/apps/dota2/images/items/courier_lg.png';
-          }else if(k=='ward'){
+          }else if(k==='ward'){
             return 'http://cdn.dota2.com/apps/dota2/images/items/ward_observer_lg.png';
           }
           return 'http://media.steampowered.com/apps/dota2/images/heroes/'+k+'_hphover.png';
         },
         econItemsUrl: function(id){
-          if(id=='courier'){
+          if(id==='courier'){
             return '//dotaflame.com/api/EconItems?prefab='+id;
-          }else if(id=='ward'){
+          }else if(id==='ward'){
             return '//dotaflame.com/api/EconItems?prefab='+id;
           }
           return '//dotaflame.com/api/EconItems?hero='+id;
@@ -522,7 +522,7 @@
           }
         },
         addModel: function(o) {
-            if(o._model==undefined){
+            if(o._model===undefined){
               console.log('Cannot addModel (no _model): ',o);
               this.appMessage('Cannot equip '+o.name+'. Model not found!');
               return;
@@ -553,31 +553,31 @@
           if('visuals' in item){
             for(var am in item.visuals){
               //wards, summons
-              if(item.visuals[am].type=='entity_model'){
+              if(item.visuals[am].type==='entity_model'){
                 item._model=item.visuals[am].modifier;
               }
               //courier
-              else if(item.visuals[am].type=='courier'){
-                if(item.visuals[am].asset=='radiant'){
+              else if(item.visuals[am].type==='courier'){
+                if(item.visuals[am].asset==='radiant'){
                   item._model=item.visuals[am].modifier;
                   item.item_slot=item.visuals[am].type;
                   this.addModel(JSON.parse(JSON.stringify(item)));
                 }
               }
               //courier_flying
-              else if(item.visuals[am].type=='courier_flying'){
-                if(item.visuals[am].asset=='radiant'){
+              else if(item.visuals[am].type==='courier_flying'){
+                if(item.visuals[am].asset==='radiant'){
                   item._model=item.visuals[am].modifier;
                   item.item_slot=item.visuals[am].type;
                 }
               }
               //pet
-              else if(item.visuals[am].type=='pet'){
+              else if(item.visuals[am].type==='pet'){
                 item._model=item.visuals[am].asset;
                 //item.item_slot=item.visuals[am].type;
               }
               //Shapeshift
-              else if(item.visuals[am].type=='hero_model_change'){
+              else if(item.visuals[am].type==='hero_model_change'){
                 item._model=item.visuals[am].modifier;
               }
               
@@ -601,7 +601,7 @@
         },
         equipItem: function(e){
           var item = e.model.item;
-          if(item.item_class=='supply_crate'){
+          if(item.item_class==='supply_crate'){
             //handle supply crate...
             this.appMessage(item.name+' cannot be equipped.');
             return;
@@ -611,7 +611,7 @@
           
           this.$.mainDrawerPanel.closeDrawer();
           
-          if(item.item_class=='bundle')
+          if(item.item_class==='bundle')
           {
             //handle bundle
             this.clearModel();
@@ -644,7 +644,7 @@
             //remove other item of same slot
             if('item_slot' in item){
               for(var i in this.models){
-                if(this.models[i].item_slot==item.item_slot){
+                if(this.models[i].item_slot===item.item_slot){
                   this.removeModel(this.models[i]);
                   break;
                 }
@@ -670,7 +670,7 @@
             this.addItem(this.hero);
             for(var i in this.econItems.items)
             {
-              if(this.econItems.items[i].prefab=='default_item' && 
+              if(this.econItems.items[i].prefab==='default_item' && 
                 'model_player' in this.econItems.items[i]){
                   this.addItem(this.econItems.items[i]);
                 }
@@ -715,7 +715,7 @@
           this.itemSearchText='';
         },
         setItemSearch: function(e){
-          if(e.model.item.item_slot=='hero'){
+          if(e.model.item.item_slot==='hero'){
             this.$.heroSelectionDialog.open();
             return;
           }
@@ -737,7 +737,7 @@
               break;
             case 'track':
               //button always 0 in firefox
-              if(d.sourceEvent.button==1){
+              if(d.sourceEvent.button===1){
                 Module.SC_SetCamZoom(d.ddy);
               }else{
                 Module.SC_SetCamRotationSpeed(-0.01*d.ddy,-0.01*d.ddx,0);

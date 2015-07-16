@@ -26,7 +26,7 @@
     fileref2.setAttribute('src', 'raw.js');
     document.getElementsByTagName('head')[0].appendChild(fileref2);
     
-    //handle resize
+    //handle resize obsolete
     function setCanvasSize(){
       var div = document.getElementById('canvasDiv');
       var viewport = document.getElementById('canvas');
@@ -42,9 +42,9 @@
         viewport.style.width='';
       }
     }
-    window.addEventListener('resize', setCanvasSize, true);
+    //window.addEventListener('resize', setCanvasSize, true);
     
-    //handle mousewheel
+    //handle mousewheel (move to engine.js)
     function setCanvasZoom(e2){
     	var e = window.event || e2; // old IE support
       var delta = Math.max(-1, Math.min(1, (e.wheelDelta || -e.detail)));

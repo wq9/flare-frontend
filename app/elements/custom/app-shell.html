@@ -6,7 +6,7 @@
       background-size: cover;
     } 
     canvas.emscripten { 
-				border: 0px none; 
+				border: 0px none;
 				margin: auto 0;
         padding: 0;
         width:100%;
@@ -208,7 +208,7 @@
             <paper-icon-button icon="arrow-back" list-toggle></paper-icon-button>
             <div class="title flex">D2Armory</div>
             <paper-icon-button icon="social:share" on-tap="shareIconTap"></paper-icon-button>
-            <paper-icon-button icon="refresh" on-tap="refreshModelList"></paper-icon-button>
+            <paper-icon-button icon="refresh" on-tap="resetHeroModels"></paper-icon-button>
             <paper-icon-button icon="more-vert" on-tap="openAboutDialog"></paper-icon-button>
           </paper-toolbar>
 
@@ -312,6 +312,7 @@
           //'resize': 'setCanvasSize',
         },
         setCanvasSize: function(){
+          //obsolete
           var w = this.$.canvasDiv.clientWidth;
           var h = this.$.canvasDiv.clientHeight;
           console.log('Canvas container size: ',w,h);
@@ -412,9 +413,6 @@
         },
         heroesResponse: function(r){
           //console.log(r.detail.response);
-          //if(app.ready) this.heroid=1;
-          //else {console.log('app not ready')}
-          //this.refreshModelList();
           this.splice('heroes',0,0,{
               id:'courier',
               name:'Couriers',
@@ -489,7 +487,7 @@
           this.closeItemSearch();
           
           console.log('econItemsResponse: ',this.econItems);
-          this.refreshModelList();
+          this.resetHeroModels();
         },
         heroImageUrl:function(k){
           if(k==='courier'){
@@ -662,11 +660,9 @@
           e.stopPropagation();
           this.appMessage('Item Data logged in the Console');
         },
-        refreshModelList: function() {
-            //this.$.status.innerHTML='';//clear status
+        resetHeroModels: function() {
             this.clearModel();
-            this.setCanvasSize();
-            this.resetScene();
+            this.resetCamera();
             this.addItem(this.hero);
             for(var i in this.econItems.items)
             {
@@ -676,7 +672,7 @@
                 }
             }
         },
-        resetScene:function(){
+        resetCamera:function(){
           Module.SC_SetCamTarget(0,100,0);
           Module.SC_SetCamPosition(300,100,0);
           Module.SC_SetCamRotationSpeed(-Math.PI/9000,Math.PI/900,0);

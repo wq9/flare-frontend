@@ -15,6 +15,17 @@ var Module = {
         };
         window.addEventListener("keydown", GLFW.onKeydown, true);
         
+        //handle resize
+        GLFW.onResize = function(event) {
+          var w = Module['canvas'].clientWidth*window.devicePixelRatio;
+          var h = Module['canvas'].clientHeight*window.devicePixelRatio;
+          console.log('onResize',w,h,window.devicePixelRatio);
+          Module.setCanvasSize(w,h,false);
+          Module.GL_SetViewPort(w,h);
+        };
+        window.addEventListener('resize', GLFW.onResize, true);
+        GLFW.onResize(null);
+        
         app.ready=true;
         //prepareUI();
     },

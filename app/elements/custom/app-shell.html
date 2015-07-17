@@ -430,15 +430,15 @@
           for(var i in r.detail.response.items)
           {
             //handle styles
-            if("visuals" in r.detail.response.items[i] && 
-              "styles" in r.detail.response.items[i].visuals)
+            if('visuals' in r.detail.response.items[i] && 
+              'styles' in r.detail.response.items[i].visuals)
             {
               for(var j in r.detail.response.items[i].visuals.styles){
-                if("model_player" in r.detail.response.items[i].visuals.styles[j]){
+                if('model_player' in r.detail.response.items[i].visuals.styles[j]){
                   var temp = JSON.parse(JSON.stringify(r.detail.response.items[i]));
                   temp.model_player = temp.visuals.styles[j].model_player;
-                  temp.name += " "+(parseInt(j)+1);
-                  if("alternate_icon" in temp.visuals.styles[j]){
+                  temp.name += ' '+(parseInt(j)+1);
+                  if('alternate_icon' in temp.visuals.styles[j]){
                     temp.image_inventory = temp.visuals.alternate_icons[
                       parseInt(temp.visuals.styles[j].alternate_icon)].icon_path;
                   }

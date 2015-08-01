@@ -557,12 +557,15 @@
               return;
             }
             
-            o._model = o._model.replace('.mdl','.vmdl')+'_c';
+            o._model = o._model.replace('.vmdl','.vmdl_c');
+            o._model = o._model.replace('.mdl','.vmdl_c');
             
             console.log('addModel: ', o.item_slot, o.name);
             console.log(o);
             this.push('models',o);
             Module.MC_AddModel(o._model);
+            
+            if('visuals' in o && 'skin' in o.visuals) Module.MC_SetMatOffset(o._model, parseInt(o.visuals.skin));
         },
         removeModel: function(o){
           console.log('removeModel: ', o.item_slot, o.name);

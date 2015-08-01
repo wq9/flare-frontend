@@ -563,6 +563,8 @@
             console.log(o);
             this.push('models',o);
             Module.MC_AddModel(o._model);
+            
+            if('visuals' in o && 'skin' in o.visuals) Module.MC_SetMatOffset(o._model, parseInt(o.visuals.skin));
         },
         removeModel: function(o){
           console.log('removeModel: ', o.item_slot, o.name);

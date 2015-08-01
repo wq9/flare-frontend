@@ -206,7 +206,7 @@
           <!-- Main Toolbar -->
           <paper-toolbar>
             <paper-icon-button icon="arrow-back" list-toggle></paper-icon-button>
-            <div class="title flex">D2Armory [BETA]</div>
+            <div class="title flex">D2Armory Beta</div>
             <paper-icon-button icon="social:share" on-tap="shareIconTap"></paper-icon-button>
             <paper-icon-button icon="refresh" on-tap="resetHeroModels"></paper-icon-button>
             <paper-icon-button icon="more-vert" on-tap="openAboutDialog"></paper-icon-button>
@@ -416,7 +416,7 @@
           this.splice('heroes',0,0,{
               id:'courier',
               name:'Couriers',
-              item_slot: 'courier_flying',
+              item_slot: 'courier',
               Model: 'models/props_gameplay/donkey_wings.mdl'
             },{
               'id':'ward',
@@ -427,6 +427,10 @@
           this.$.heroSelectionDialog.open();
         },
         econItemsResponse: function(r){
+          if(this.hero.id !== 'courier' && this.hero.id !== 'ward'){
+            r.detail.response.items.push(this.hero);
+          }
+          
           for(var i in r.detail.response.items)
           {
             //handle styles
@@ -526,7 +530,7 @@
               return;
             }
             
-            o._model = o._model.replace('.mdl','.vmdl_c');
+            o._model = o._model.replace('.mdl','.vmdl')+'_c';
             
             console.log('addModel: ', o.item_slot, o.name);
             console.log(o);
@@ -583,11 +587,13 @@
             }
           }
           
-          //hero base model
+          //hero base model or default ward/courier
           if('Model' in item){
             item._model = item.Model;
             item.image = this.heroImageUrl(this.hero.id);
-            item.item_slot = 'hero';
+            if(!('item_slot' in item)){
+              item.item_slot = 'hero';
+            }
           }
           
           //items with models

@@ -557,7 +557,8 @@
               return;
             }
             
-            o._model = o._model.replace('.mdl','.vmdl')+'_c';
+            o._model = o._model.replace('.vmdl','.vmdl_c');
+            o._model = o._model.replace('.mdl','.vmdl_c');
             
             console.log('addModel: ', o.item_slot, o.name);
             console.log(o);

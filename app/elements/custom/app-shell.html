@@ -69,6 +69,7 @@
       color:white;
       text-shadow: -1px 0 0.2em black,0 1px 0.2em black,1px 0 0.2em black,0 -1px 0.2em black;
     }
+    
     .itemSlotDiv{
       position:relative;
       color:white;
@@ -80,6 +81,32 @@
     .itemSlotDiv div{
       position:absolute;
     }
+    
+    .itemSlotDiv[rarity='common']{
+      box-shadow: 0px 0px 4px 2px#b0c3d9;
+    }
+    .itemSlotDiv[rarity='uncommon']{
+      box-shadow: 0px 0px 4px 2px#5e98d9;
+    }
+    .itemSlotDiv[rarity='rare']{
+      box-shadow: 0px 0px 4px 2px#4b69ff;
+    }
+    .itemSlotDiv[rarity='mythical']{
+      box-shadow: 0px 0px 4px 2px#8847ff;
+    }
+    .itemSlotDiv[rarity='legendary']{
+      box-shadow: 0px 0px 4px 2px#d32ce6;
+    }
+    .itemSlotDiv[rarity='ancient']{
+      box-shadow: 0px 0px 4px 2px#eb4b4b;
+    }
+    .itemSlotDiv[rarity='immortal']{
+      box-shadow: 0px 0px 4px 2px#e4ae39;
+    }
+    .itemSlotDiv[rarity='arcana']{
+      box-shadow: 0px 0px 4px 2px#ade55c;
+    }
+    
     .closeItemSlot{
       padding:0;
       position:absolute;
@@ -141,7 +168,7 @@
             <div class="flex itemSlotContainer" style='overflow:auto;width:100%;text-align:center;'>
               
               <template is="dom-repeat" items="{{models}}">
-                  <div class="itemSlotDiv" on-tap="setItemSearch">
+                  <div class="itemSlotDiv" on-tap="setItemSearch" rarity$="{{item.item_rarity}}">
                     <iron-image class="fit" sizing="contain" preload fade src="{{item.image}}"
                       placeholder="//dotaflame.com/images/econ/default_item.png"></iron-image>
                     <div class="itemName">{{item.name}}</div>
@@ -190,7 +217,7 @@
           
           <div class="itemContainerDiv">
           <template is="dom-repeat" items="{{econItems.items}}" filter="itemSearch" id="itemGridRepeat">
-            <div class="itemSlotDiv itemGrid" on-tap="equipItem">
+            <div class="itemSlotDiv itemGrid" on-tap="equipItem" rarity$="{{item.item_rarity}}">
               <iron-image class="fit" sizing="contain" preload fade src="{{item.image}}" placeholder="//dotaflame.com/images/econ/default_item.png"></iron-image>
               <div class="itemName">{{item.name}}</div>
               <div class="itemSlot">{{capitalize(item.item_slot)}}</div>

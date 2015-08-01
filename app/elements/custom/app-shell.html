@@ -526,6 +526,7 @@
               return;
             }
             
+            o._model = o._model.replace('.vmdl','.vmdl_c');
             o._model = o._model.replace('.mdl','.vmdl_c');
             
             console.log('addModel: ', o.item_slot, o.name);
@@ -547,12 +548,23 @@
           this.removeModel(e.model.item);
         },
         addItem: function(item){
+          
+          console.log('Adding '+item.name);
+          
+          var position = {x: 0, y:0, z:0};
+          
+          var isWard = false;
+          
           //summons
           if('visuals' in item){
             for(var am in item.visuals){
               //wards, summons
               if(item.visuals[am].type==='entity_model'){
                 item._model=item.visuals[am].modifier;
+                if(item.visuals[am].asset==='npc_dota_observer_wards')
+                {
+                  isWard = true;
+                }
               }
               //courier
               else if(item.visuals[am].type==='courier'){
@@ -579,9 +591,13 @@
                 item._model=item.visuals[am].modifier;
               }
               
-              
             }
           }
+          
+          if(item.name==='Wards') isWard = true;
+          
+          if(item.item_slot==='courier') position.z = -100;
+          if(item.item_slot==='courier_flying') position.z = 100;
           
           //hero base model
           if('Model' in item){
@@ -595,7 +611,26 @@
             item._model = item.model_player;
           }
           
+          // ward
+          if(isWard)
+          {
+            console.log("Item is a ward, duplicating sentry one");
+            // add observer ward
+            var sentryItem = JSON.parse(JSON.stringify(item));;
+            sentryItem._model += "#sentry";
+            this.addModel(sentryItem);
+            // TODO: move thse Module setting somewhere else
+            Module.MC_SetMatOffset(sentryItem._model,1);
+            Module.MC_SetPosition(sentryItem._model,0,0,100);
+            
+            item._model += "#observer";
+            position.z = -100;
+          }
+          
           this.addModel(item); //name,item_slot,_model,image
+          
+          Module.MC_SetPosition(item._model,position.x,position.y,position.z);
+          
         },
         equipItem: function(e){
           var item = e.model.item;

@@ -1,4 +1,5 @@
 #!/bin/bash
+gulp
 cd dist
 rm -r bower_components/
 rm -r cdnjs.cloudflare.com/

@@ -76,6 +76,8 @@ var Module = {
 };
 Module.setStatus('Loading Engine...');
 window.onerror = function(event) {
+    //console.log(event);
+    if(event=='Uncaught Error: File exists') return;    // File exists happens in dual ward model
     // TODO: do not warn on ok events like simulating an infinite loop or exitStatus
     Module.setStatus('JavaScript error, open console for more details (Ctrl-Shift-J)');
     //spinnerElement.style.display = 'none';

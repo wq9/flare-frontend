@@ -368,6 +368,13 @@
           this.heroChosen=true;
           this.hero = e.model.item;
           
+          //format for itemlist (econItemsResponse)
+          this.hero._model = this.hero.Model;
+          this.hero.image = this.heroImageUrl(this.hero.id);
+          if(!('item_slot' in this.hero)){
+            this.hero.item_slot = 'hero';
+          }
+          
           this.ItemSlots = {
             'set':{'SlotIndex':-1,'SlotName':'set'}
           };
@@ -484,7 +491,9 @@
           
           for(var i in r.detail.response.items)
           {
-            r.detail.response.items[i].image = '//dotaflame.com/images/'+r.detail.response.items[i].image_inventory+'.png';
+            if(!('image' in r.detail.response.items[i])){
+              r.detail.response.items[i].image = this.econItemImageUrl(r.detail.response.items[i].image_inventory);
+            }
             
             if(r.detail.response.items[i].prefab==='bundle'){
               r.detail.response.items[i].item_slot='set';
@@ -536,6 +545,9 @@
           }
           return '//dotaflame.com/api/EconItems?hero='+id;
         },
+        econItemImageUrl:function(i){
+          return '//dotaflame.com/images/'+i.toLowerCase()+'.png';
+        },
         updateModel: function(){
           this.debounce('updateModel', function() {
             this.notifyPath('models',this.models);
@@ -557,15 +569,23 @@
               return;
             }
             
-            o._model = o._model.replace('.vmdl','.vmdl_c');
-            o._model = o._model.replace('.mdl','.vmdl_c');
+            o._model = o._model.replace( /\.v?mdl\b/i ,'.vmdl_c');
             
             console.log('addModel: ', o.item_slot, o.name);
             console.log(o);
             this.push('models',o);
             Module.MC_AddModel(o._model);
             
-            if('visuals' in o && 'skin' in o.visuals) Module.MC_SetMatOffset(o._model, parseInt(o.visuals.skin));
+            if('_position' in o){
+              Module.MC_SetPosition(o._model,o._position.x,o._position.y,o._position.z);
+            }
+            if('_matOffset' in o){
+              Module.MC_SetMatOffset(o._model,o._matOffset);
+            }
+            
+            if('visuals' in o && 'skin' in o.visuals){
+              Module.MC_SetMatOffset(o._model, parseInt(o.visuals.skin));
+            }
         },
         removeModel: function(o){
           console.log('removeModel: ', o.item_slot, o.name);
@@ -586,32 +606,34 @@
           
           var position = {x: 0, y:0, z:0};
           
-          var isWard = false;
-          
           //summons
           if('visuals' in item){
             for(var am in item.visuals){
+              
+              //TODO support for styles: courier Smeevil
+              if(item.visuals[am].style>0){
+                continue;
+              }
+              
               //wards, summons
               if(item.visuals[am].type==='entity_model'){
                 item._model=item.visuals[am].modifier;
-                if(item.visuals[am].asset==='npc_dota_observer_wards')
-                {
-                  isWard = true;
-                }
               }
               //courier
               else if(item.visuals[am].type==='courier'){
                 if(item.visuals[am].asset==='radiant'){
                   item._model=item.visuals[am].modifier;
                   item.item_slot=item.visuals[am].type;
-                  this.addModel(JSON.parse(JSON.stringify(item)));
                 }
               }
               //courier_flying
               else if(item.visuals[am].type==='courier_flying'){
                 if(item.visuals[am].asset==='radiant'){
-                  item._model=item.visuals[am].modifier;
-                  item.item_slot=item.visuals[am].type;
+                  var flying = JSON.parse(JSON.stringify(item));
+                  flying._model=item.visuals[am].modifier;
+                  flying.item_slot=item.visuals[am].type;
+                  flying._position = {x:0,y:150,z:0}; //adjust after animation
+                  this.addModel(flying);
                 }
               }
               //pet
@@ -627,44 +649,42 @@
             }
           }
           
-          if(item.name==='Wards') isWard = true;
-          
-          if(item.item_slot==='courier') position.z = -100;
-          if(item.item_slot==='courier_flying') position.z = 100;
-          
-          //hero base model or default ward/courier
-          if('Model' in item){
-            item._model = item.Model;
-            item.image = this.heroImageUrl(this.hero.id);
-            if(!('item_slot' in item)){
-              item.item_slot = 'hero';
-            }
-          }
-          
           //items with models
           if('model_player' in item){
             item._model = item.model_player;
           }
           
           // ward
-          if(isWard)
+          if(item.item_slot==='ward')
           {
-            console.log("Item is a ward, duplicating sentry one");
-            // add observer ward
-            var sentryItem = JSON.parse(JSON.stringify(item));;
+            //sentry
+            var sentryItem = JSON.parse(JSON.stringify(item));
             sentryItem._model += "#sentry";
+            sentryItem.name += " (Sentry)";
+            sentryItem._position = {x:0, y:0, z:-80};
+            sentryItem._matOffset = 1;
             this.addModel(sentryItem);
-            // TODO: move thse Module setting somewhere else
-            Module.MC_SetMatOffset(sentryItem._model,1);
-            Module.MC_SetPosition(sentryItem._model,0,0,100);
             
+            //observer
             item._model += "#observer";
-            position.z = -100;
+            item._position = {x:0, y:0, z:80};
+          }
+          
+          //summon
+          if(item.item_slot==='summon'){
+            if(Module.MC_ModelCount()>0){
+              item._position={x:0,y:0,z:150};
+            }
+          }
+          
+          //ability4
+          if(item.item_slot==='ability4'){
+            if(Module.MC_ModelCount()>0){
+              item._position={x:0,y:0,z:-150};
+            }
           }
           
           this.addModel(item); //name,item_slot,_model,image
-          
-          Module.MC_SetPosition(item._model,position.x,position.y,position.z);
           
         },
         equipItem: function(e){
@@ -760,9 +780,6 @@
             }
           }
           return title;
-        },
-        getItemImageUrl:function(i){
-          return '//dotaflame.com/images/'+i+'.png';
         },
         capitalize: function(s){
           if(s===undefined) return '';

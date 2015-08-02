@@ -17,8 +17,9 @@ var Module = {
         
         //handle resize
         GLFW.onResize = function(event) {
-          var w = Module['canvas'].clientWidth*window.devicePixelRatio;
-          var h = Module['canvas'].clientHeight*window.devicePixelRatio;
+          var ssaa = 2; //Super sampling anti-aliasing
+          var w = Module['canvas'].clientWidth*window.devicePixelRatio*ssaa;
+          var h = Module['canvas'].clientHeight*window.devicePixelRatio*ssaa;
           console.log('onResize',w,h,window.devicePixelRatio);
           Module.setCanvasSize(w,h,false);
           Module.GL_SetViewPort(w,h);

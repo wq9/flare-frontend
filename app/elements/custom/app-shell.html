@@ -562,6 +562,27 @@
             Module.MC_RemoveModel(Module.MC_GetModel(v));
           }
         },
+        addBaseModels: function(){
+          this.addItem(this.hero);
+          
+          //pedestal
+          this.addItem({
+              'id':'pedestal',
+              'name':'Pedestal',
+              item_slot: 'pedestal',
+              _model: 'models/heroes/pedestal/pedestal_2_ground.vmdl_c'
+          });
+          
+          //Body_head
+          /*
+          for(var i in this.econItems.items){
+            if(this.econItems.items[i].item_slot==='body_head' && this.econItems.items[i].prefab==='default_item'){
+              this.addItem(this.econItems.items[i]);
+              break;
+            }
+          }
+          */
+        },
         addModel: function(o) {
             if(o._model===undefined){
               console.log('Cannot addModel (no _model): ',o);
@@ -702,8 +723,8 @@
           if(item.item_class==='bundle')
           {
             //handle bundle
-            this.clearModel();
-            this.addItem(this.hero);
+            //this.clearModel();
+            //this.addBaseModels();
             
             var bundle=[];
             for(var i in item.bundle){
@@ -714,7 +735,8 @@
               var index = bundle.indexOf(this.econItems.items[i].name);
               if(index>=0){
                 bundle.splice(index,1);
-                this.addItem(this.econItems.items[i]);
+                //this.addItem(this.econItems.items[i]);
+                this.equipItem({model:{item:this.econItems.items[i]}});
               }
             }
             console.log('Bundle end: ',bundle);
@@ -753,7 +775,7 @@
         resetHeroModels: function() {
             this.clearModel();
             this.resetCamera();
-            this.addItem(this.hero);
+            this.addBaseModels();
             for(var i in this.econItems.items)
             {
               if(this.econItems.items[i].prefab==='default_item' && 

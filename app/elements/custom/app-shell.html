@@ -156,7 +156,7 @@
     <iron-ajax id="econItemsAjax" url="{{econItemsUrl(hero.id)}}" loading="{{loadingEconItems}}"
     handle-as="json" on-response="econItemsResponse"></iron-ajax>
     
-    <paper-drawer-panel id="navDrawerPanel" responsive-width="1280px" 
+    <paper-drawer-panel id="navDrawerPanel" responsive-width="1280px" narrow="{{_notDesktop}}"
       default-selected="drawer" drawer-width="148px;">
 
       <div class="layout vertical center" drawer>
@@ -192,7 +192,7 @@
             </div>
       </div>
 
-      <paper-drawer-panel id="mainDrawerPanel" class="main-drawer-panel" right-drawer="{{!_isMobile}}" 
+      <paper-drawer-panel id="mainDrawerPanel" class="main-drawer-panel" right-drawer="{{!_notDesktop}}" 
         main responsive-width="900px" narrow="{{_isMobile}}" default-selected="drawer"
           drawer-width="[[_computeListWidth(_isMobile)]]" drawer-toggle-attribute="list-toggle">
 

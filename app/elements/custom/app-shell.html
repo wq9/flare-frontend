@@ -161,7 +161,7 @@
 
       <div class="layout vertical center" drawer>
           <paper-toolbar>
-            <paper-icon-button icon="apps" on-tap="openHeroSelectionDialog"></paper-icon-button>
+            <paper-icon-button icon="apps" on-tap="openHeroSelectionDialog" title="Change Hero"></paper-icon-button>
           </paper-toolbar>
           
             <!-- List -->
@@ -198,9 +198,11 @@
 
         <paper-header-panel class="list-panel" drawer>
 
-          <!-- List Toolbar -->
+          <!-- Item List Toolbar -->
           <paper-toolbar>
             <paper-icon-button icon="menu" paper-drawer-toggle></paper-icon-button>
+            <paper-icon-button icon="apps" on-tap="openHeroSelectionDialog" 
+              hidden$="{{showItemSearch}}" title="Change Hero"></paper-icon-button>
             <div class="title flex" hidden$="{{showItemSearch}}">{{hero.name}}</div>
             <paper-icon-button icon="search" on-tap="openItemSearch"></paper-icon-button>
             <div class="flex layout horizontal center" hidden$="{{!showItemSearch}}">
@@ -211,7 +213,6 @@
             <paper-icon-button icon="arrow-forward" list-toggle></paper-icon-button>
           </paper-toolbar>
 
-          <!-- List -->
           <div hidden$="{{heroChosen}}" class="spinnerDiv" on-tap="openHeroSelectionDialog">
             Choose a Hero
           </div>
@@ -219,6 +220,7 @@
             <paper-spinner active></paper-spinner>
           </div>
           
+          <!-- Item List -->
           <div class="itemContainerDiv">
           <template is="dom-repeat" items="{{econItems.items}}" filter="itemSearch" id="itemGridRepeat">
             <div class="itemSlotDiv itemGrid" on-tap="equipItem" rarity$="{{item.item_rarity}}">

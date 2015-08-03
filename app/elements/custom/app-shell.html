@@ -170,7 +170,21 @@
             </div>
             
             <div class="flex itemSlotContainer" style='overflow:auto;width:100%;text-align:center;'>
+              <!-- Slots-->
+              <template is="dom-repeat" items="{{hero.ItemSlots}}">
+                  <div class="itemSlotDiv" on-tap="slotTap" rarity$="{{item._equipped.item_rarity}}">
+                    <iron-image class="fit" sizing="contain" preload fade 
+                      prevent-load$="{{isSlotEquipped(item._equipped)}}"" src="{{item._equipped.image}}"
+                      placeholder="//dotaflame.com/images/econ/default_item.png"></iron-image>
+                    <div class="itemName">{{item._equipped.name}}</div>
+                    <div class="itemSlot">{{capitalize(item.SlotName)}}</div>
+                    <paper-icon-button icon="close" on-tap="removeItemFromSlot" class="closeItemSlot"></paper-icon-button>
+                  </div>
+              </template>
               
+              <!-- Models-->
+              <div hidden>
+              <hr>
               <template is="dom-repeat" items="{{models}}">
                   <div class="itemSlotDiv" on-tap="setItemSearch" rarity$="{{item.item_rarity}}">
                     <iron-image class="fit" sizing="contain" preload fade src="{{item.image}}"
@@ -180,15 +194,8 @@
                     <paper-icon-button icon="close" on-tap="removeItem" class="closeItemSlot"></paper-icon-button>
                   </div>
               </template>
+              </div>
               
-            <!--
-            <template is="dom-repeat" items="{{hero.ItemSlots}}">
-                <div class="itemSlotDiv">
-                  <iron-image class="itemImage" sizing="contain" preload fade src="//dotaflame.com/images/econ/default_item.png"></iron-image>
-                  <div class="heroName">{{capitalize(item.SlotName)}}</div>
-                </div>
-            </template>
-            -->
             </div>
       </div>
 
@@ -357,7 +364,24 @@
           this.$.navDrawerPanel.closeDrawer();
           
           this.heroChosen=true;
-          this.hero = e.model.item;
+          
+          //Adjust ItemSlots
+          if(e.model.item._id!=='non-hero'){
+            e.model.item.ItemSlots.unshift({
+              SlotIndex: 100,
+              SlotName: 'hero',
+              SlotText: 'Hero'
+            });
+          }
+          e.model.item.ItemSlots.push({
+            SlotIndex: 99,
+            SlotName: 'pedestal',
+            SlotText: 'Pedestal'
+          });
+          for(var i in e.model.item.ItemSlots){
+            e.model.item.ItemSlots[i]._equipped={};
+          }
+          this.set('hero', e.model.item);
           
           //format for itemlist (econItemsResponse)
           this.hero._model = this.hero.Model;
@@ -439,20 +463,36 @@
         heroesResponse: function(r){
           //console.log(r.detail.response);
           this.splice('heroes',0,0,{
+              _id: 'non-hero',
               id:'courier',
               name:'Couriers',
               item_slot: 'courier',
-              Model: 'models/props_gameplay/donkey_wings.mdl'
+              Model: 'models/props_gameplay/donkey_wings.mdl',
+              ItemSlots: [
+                {
+                  SlotIndex: 0,
+                  SlotName: 'courier',
+                  SlotText: 'Courier'
+                }
+              ]
             },{
+              _id: 'non-hero',
               'id':'ward',
               'name':'Wards',
               item_slot: 'ward',
-              Model: 'models/items/wards/dire_ward_eye/dire_ward_eye.mdl'
+              Model: 'models/items/wards/dire_ward_eye/dire_ward_eye.mdl',
+              ItemSlots: [
+                {
+                  SlotIndex: 0,
+                  SlotName: 'ward',
+                  SlotText: 'Ward'
+                }
+              ]
           });
           this.$.heroSelectionDialog.open();
         },
         econItemsResponse: function(r){
-          if(this.hero.id !== 'courier' && this.hero.id !== 'ward'){
+          if(this.hero._id !== 'non-hero'){
             r.detail.response.items.push(this.hero);
           }
           
@@ -489,9 +529,10 @@
             if(r.detail.response.items[i].item_class==='bundle'){
               r.detail.response.items[i].item_slot='set';
             }
+            //SlotIndex
             r.detail.response.items[i].SlotIndex = (r.detail.response.items[i].item_slot in this.ItemSlots ? 
               this.ItemSlots[r.detail.response.items[i].item_slot].SlotIndex : 9);
-            
+            //creation_date
             if('creation_date' in r.detail.response.items[i]){
               r.detail.response.items[i].creation_date = 
                 new Date(r.detail.response.items[i].creation_date);
@@ -554,7 +595,7 @@
           }
         },
         addPedestal: function(){
-          this.addItem({
+          this.equipItem({
               'id':'pedestal',
               'name':'Pedestal',
               item_slot: 'pedestal',
@@ -562,7 +603,7 @@
           });
         },
         addBaseModels: function(){
-          this.addItem(this.hero);
+          this.equipItem(this.hero);
           this.addPedestal();
         },
         addModel: function(o) {
@@ -590,18 +631,39 @@
               Module.MC_SetMatOffset(o._model, parseInt(o.visuals.skin));
             }
         },
+        removeModelBySlot: function(s){
+          for(var i in this.models){
+            if(this.models[i].item_slot===s){
+              this.removeModel(this.models[i]);
+              break;
+            }
+          }
+        },
         removeModel: function(o){
           console.log('removeModel: ', o.item_slot, o.name);
-          this.splice('models',this.models.indexOf(o),1);
-          Module.MC_RemoveModel(o._model);
-          
-          this.appMessage(o.name+' removed.');
-          //this.updateModel();
+          var index = this.models.indexOf(o);
+          if(index!==-1){
+            this.splice('models',this.models.indexOf(o),1);
+            Module.MC_RemoveModel(o._model);
+            this.appMessage(o.name+' removed.');
+          }else{
+            console.log('removeModel element not found', o);
+          }
         },
         removeItem: function(e){
           e.stopPropagation();
           console.log(e);
           this.removeModel(e.model.item);
+        },
+        removeItemFromSlot: function(e){
+          e.stopPropagation();
+          if('_equipped' in e.model.item){
+            this.removeModel(e.model.item._equipped);
+            //console.log('hero.ItemSlot.index', e.model.index);
+            //delete e.model.item._equipped;
+            this.set('hero.ItemSlots.'+e.model.index+'._equipped', {});
+            //console.log('hero.ItemSlots',this.hero.ItemSlots);
+          }
         },
         addItem: function(item){
           //console.log('Adding '+item.name);
@@ -625,23 +687,24 @@
               else if(item.visuals[am].type==='courier'){
                 if(item.visuals[am].asset==='radiant'){
                   item._model=item.visuals[am].modifier;
-                  item.item_slot=item.visuals[am].type;
                 }
               }
               //courier_flying
               else if(item.visuals[am].type==='courier_flying'){
                 if(item.visuals[am].asset==='radiant'){
-                  var flying = JSON.parse(JSON.stringify(item));
-                  flying._model=item.visuals[am].modifier;
-                  flying.item_slot=item.visuals[am].type;
-                  flying._position = {x:0,y:150,z:0}; //adjust after animation
+                  var flying = {
+                    _model: item.visuals[am].modifier,
+                    name: item.name+' (Flying)',
+                    image: item.image,
+                    item_slot: 'courier_flying',
+                    _position: {x:0,y:150,z:0}//adjust after animation
+                  }; //JSON.parse(JSON.stringify(item));
                   this.addModel(flying);
                 }
               }
               //pet
               else if(item.visuals[am].type==='pet'){
                 item._model=item.visuals[am].asset;
-                //item.item_slot=item.visuals[am].type;
               }
               //Shapeshift
               else if(item.visuals[am].type==='hero_model_change'){
@@ -656,15 +719,24 @@
             item._model = item.model_player;
           }
           
+          //techies arms(remote mines), belt(minefield sign)
+          
           //positioning based on slot
           switch(item.item_slot) {
               case 'ward':
                   //sentry
-                  var sentryItem = JSON.parse(JSON.stringify(item));
-                  sentryItem._model += "#sentry";
-                  sentryItem.name += " (Sentry)";
-                  sentryItem._position = {x:0, y:0, z:-80};
-                  sentryItem._matOffset = 1;
+                  var sentryItem = {
+                    _model: item._model+'#sentry',
+                    name: item.name+' (Sentry)',
+                    image: item.image,
+                    item_slot: 'sentry',
+                    _position: {x:0, y:0, z:-80},
+                    _matOffset: 1
+                  };//JSON.parse(JSON.stringify(item));
+                  //sentryItem._model += "#sentry";
+                  //sentryItem.name += " (Sentry)";
+                  //sentryItem._position = {x:0, y:0, z:-80};
+                  //sentryItem._matOffset = 1;
                   this.addModel(sentryItem);
                   
                   //observer
@@ -672,17 +744,17 @@
                   item._position = {x:0, y:0, z:80};
                   break;
               
-              case 'ability_ultimate': //golem, lone druid, exorcism ghost, 
+              case 'ability_ultimate': //golem, lone druid true form, exorcism ghost, 
               case 'shapeshift': //dk
                   item._position={x:-200,y:0,z:0};
                   break;
-              case 'summon': //wolf, spirit bear, forge spirit, boar, serpent ward, 
+              case 'summon': //pet, wolf, spirit bear, forge spirit, boar, serpent ward, 
               case 'ability1': //spiderling 
-              case 'ability2': //eidolon, cogs, hawk, 
-              case 'ability3': //tb, treant, tombstone, neither ward, frozen sigil
+              case 'ability2': //eidolon, cogs, hawk, healing ward
+              case 'ability3': //tb, np treant, tombstone, plague/neither ward, frozen sigil
                   item._position={x:0,y:0,z:150};
                   break;
-              case 'ability4': //lycan
+              case 'ability4': //lycan shapeshift
                   item._position={x:0,y:0,z:-150};
                   break;
           }
@@ -743,16 +815,29 @@
             */
             //remove other item of same slot
             if('item_slot' in item){
-              for(var i in this.models){
-                if(this.models[i].item_slot===item.item_slot){
-                  this.removeModel(this.models[i]);
-                  break;
-                }
+              this.removeModelBySlot(item.item_slot);
+            }
+            
+            if(this.hero.id==='ward'){
+              this.removeModelBySlot('sentry');
+            }else if(this.hero.id==='courier'){
+              this.removeModelBySlot('courier_flying');
+            }
+            
+            //add to hero.ItemSlots
+            for(var i in this.hero.ItemSlots){
+              if(this.hero.ItemSlots[i].SlotName===item.item_slot){
+                //this.hero.ItemSlots[i]._equipped = item;
+                this.set('hero.ItemSlots.'+i+'._equipped',item);
+                break;
               }
             }
             
-            this.appMessage(item.name+' equipped.');
-            this.addItem(item);
+            //remove first, then add
+            this.async(function(){
+              this.appMessage(item.name+' equipped.');
+              this.addItem(item);
+            },10);
           }
           
         },
@@ -767,16 +852,31 @@
           e.stopPropagation();
         },
         resetHeroModels: function() {
+            //wait for engine
+            if(!app.ready){
+              this.appMessage('Loading Engine...');
+              this.async(this.resetHeroModels,4000);
+              return;
+            }
+            
             this.clearModel();
             this.resetCamera();
             this.addBaseModels();
-            for(var i in this.econItems.items)
-            {
-              if(this.econItems.items[i].prefab==='default_item' && 
-                'model_player' in this.econItems.items[i]){
-                  this.addItem(this.econItems.items[i]);
-                }
+            if(this.hero._id!=='non-hero'){
+              for(var i in this.econItems.items)
+              {
+                if(this.econItems.items[i].prefab==='default_item' && 
+                  'model_player' in this.econItems.items[i]){
+                    this.equipItem(this.econItems.items[i]);
+                  }
+              }
             }
+        },
+        isSlotEquipped: function(i){
+          if('image' in i){
+            return false;
+          }
+          return true;
         },
         resetCamera:function(){
           Module.SC_SetCamTarget(0,100,0);
@@ -821,6 +921,15 @@
           
           this.showItemSearch=true;
           this.itemSearchText=this.capitalize(e.model.item.item_slot);
+        },
+        slotTap: function(e){
+          //console.log('slotTap',e.model.item)
+          if(['hero','ward','courier'].indexOf(e.model.item.SlotName)!==-1){
+            this.$.heroSelectionDialog.open();
+            return;
+          }
+          this.showItemSearch=true;
+          this.itemSearchText=this.capitalize(e.model.item.SlotName);
         },
         shareIconTap: function(){
           this.appMessage('Sharing functionality not implemented yet!');

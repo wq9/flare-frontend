@@ -1,0 +1,36 @@
+<dom-module id="app-shell-about">
+  <template>
+    <paper-dialog id="aboutDialog" entry-animation="scale-up-animation" 
+      exit-animation="fade-out-animation">
+      <h2>D2Armory</h2>
+      <paper-dialog-scrollable>
+        <div class="paper-font-title">About</div>
+        <p class="paper-font-body1">
+        D2Armory by <a href="http://kennyzero.me/" target="_blank">Kenny</a> and orb.<br>
+        Dota 2 is a registered trademark of Valve Corporation.<br>
+        </p>
+        <div class="paper-font-title">Bug Report & Feature Request</div>
+        <p class="paper-font-body1">
+          <a href="https://github.com/bongikairu/flare/issues">https://github.com/bongikairu/flare/issues</a>
+        </p>
+      </paper-dialog-scrollable>
+      <div class="buttons">
+        <paper-button dialog-dismiss>Close</paper-button>
+      </div>
+    </paper-dialog>
+  </template>
+
+  <script>
+    (function() {
+      Polymer({
+        is: 'app-shell-about',
+        properties: {
+			   
+        },
+        open: function(){
+          this.$.aboutDialog.open();
+        },
+      });
+    })();
+  </script>
+</dom-module>

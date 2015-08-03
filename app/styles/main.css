@@ -7,3 +7,34 @@ body {
 input {
   cursor: url('/images/cursor/cursor_db_ibeam.png') 7 12, auto;
 }
+a{color: #2196F3;text-decoration: none;}
+a:hover{
+  text-decoration: underline;
+  cursor: url('/images/cursor/cursor_db_default_highlight.png'),pointer;
+}
+
+/* Rarity */
+.itemRarityText[rarity='common']{
+  color: #b0c3d9;
+}
+.itemRarityText[rarity='uncommon']{
+  color: #5e98d9;
+}
+.itemRarityText[rarity='rare']{
+  color: #4b69ff;
+}
+.itemRarityText[rarity='mythical']{
+  color: #8847ff;
+}
+.itemRarityText[rarity='legendary']{
+  color: #d32ce6;
+}
+.itemRarityText[rarity='ancient']{
+  color: #eb4b4b;
+}
+.itemRarityText[rarity='immortal']{
+  color: #e4ae39;
+}
+.itemRarityText[rarity='arcana']{
+  color: #ade55c;
+}

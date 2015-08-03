@@ -1,0 +1,81 @@
+<dom-module id="app-shell-itemdetail">
+  <style>
+    #itemDetailDialog{
+      background-color: rgba(7,18,21,0.92);
+      color: #6C7075;
+    }
+    .lightText{
+      color: #beb7b4;
+    }
+    .itemImage{
+      width: 256px;
+      height: 170px;
+      display:block;
+      margin: 0 auto;
+      margin-bottom: 8px;
+    }
+    .capitalize {
+      text-transform: capitalize;
+    }
+    hr{
+      border-color: rgba(255,255,255,0.05);
+      border-top: 1px;
+      margin: 8px 0;
+    }
+    
+  </style>
+  <template>
+    <paper-dialog id="itemDetailDialog" entry-animation="scale-up-animation" 
+      exit-animation="fade-out-animation" no-cancel-on-outside-click>
+      <h2 class="lightText">{{item.name}}</h2>
+      <paper-dialog-scrollable>
+        <iron-image class="itemImage" sizing="contain" preload fade src="{{item.image}}" placeholder="//dotaflame.com/images/econ/default_item.png"></iron-image>
+        <div style="text-align: center;">
+          <a href$="{{steamMarketUrl(item._id)}}" target="_blank">Steam Market</a> &middot;
+          <a href$="{{dotaStoreUrl(item._id)}}" target="_blank">Store</a> &middot;
+          <a href$="{{dota2wikiUrl(item.name)}}" target="_blank">Wiki</a>
+        </div>
+        <hr>
+        <div class="capitalize">
+          Rarity: <span class="itemRarityText" rarity$="{{item.item_rarity}}">{{item.item_rarity}}</span><br>
+          Slot: <span class="lightText">{{item.item_slot}}</span><br>
+          Creation Date: <span class="lightText">{{formatDate(item.creation_date)}}</span>
+        </div>
+      </paper-dialog-scrollable>
+      <div class="buttons">
+        <paper-button on-tap="equip">Equip</paper-button>
+        <paper-button dialog-dismiss>Close</paper-button>
+      </div>
+    </paper-dialog>
+  </template>
+
+  <script>
+    (function() {
+      Polymer({
+        is: 'app-shell-itemdetail',
+        properties: {
+			     
+        },
+        open: function(){
+          this.$.itemDetailDialog.open();
+        },
+        equip: function(){
+          this.fire('equip',this.item);
+          this.$.itemDetailDialog.close();
+        },
+        formatDate: function(d){
+          return d.toLocaleDateString();
+        },
+        steamMarketUrl: function(i){
+          return '//steamcommunity.com/market/search?appid=570&q=prop_def_index:'+i;
+        },
+        dotaStoreUrl: function(i){
+          return '//www.dota2.com/store/itemdetails/'+i;
+        },
+        dota2wikiUrl: function(i){
+          return '//dota2.gamepedia.com/'+i;
+        }
+      });
+    })();
+  </script>
+</dom-module>

@@ -30,7 +30,7 @@
       --paper-drawer-panel-left-drawer-container: { background-color: rgba(0,0,0,0.2) !important; };
     }
     paper-toolbar{
-      --paper-toolbar-background: linear-gradient(to bottom, rgba(0,0,0,0) 0%,rgba(0,0,0,1) 33%,rgba(0,0,0,1) 66%,rgba(0,0,0,0) 100%);
+      --paper-toolbar-background: linear-gradient(to top, rgba(0,0,0,0) 0%,rgba(0,0,0,1) 33%,rgba(0,0,0,1) 66%,rgba(0,0,0,1) 100%);
     }
     .heroItem{
       position:relative;
@@ -223,7 +223,7 @@
           <!-- Item List -->
           <div class="itemContainerDiv">
           <template is="dom-repeat" items="{{econItems.items}}" filter="itemSearch" id="itemGridRepeat">
-            <div class="itemSlotDiv itemGrid" on-tap="equipItem" rarity$="{{item.item_rarity}}">
+            <div class="itemSlotDiv itemGrid" on-tap="itemTap" rarity$="{{item.item_rarity}}">
               <iron-image class="fit" sizing="contain" preload fade src="{{item.image}}" placeholder="//dotaflame.com/images/econ/default_item.png"></iron-image>
               <div class="itemName">{{item.name}}</div>
               <div class="itemSlot">{{capitalize(item.item_slot)}}</div>
@@ -282,24 +282,8 @@
       </div>
     </paper-dialog>
     
-    <paper-dialog id="aboutDialog" entry-animation="scale-up-animation" exit-animation="fade-out-animation" 
-      no-cancel-on-outside-click>
-      <h2>D2Armory</h2>
-      <paper-dialog-scrollable>
-        <div class="paper-font-title">About</div>
-        <p class="paper-font-body1">
-        D2Armory by <a href="http://kennyzero.me/" target="_blank">Kenny</a> and orb.<br>
-        Dota 2 is a registered trademark of Valve Corporation.<br>
-        </p>
-        <div class="paper-font-title">Bug Report & Feature Request</div>
-        <p class="paper-font-body1">
-          <a href="https://github.com/bongikairu/flare/issues">https://github.com/bongikairu/flare/issues</a>
-        </p>
-      </paper-dialog-scrollable>
-      <div class="buttons">
-        <paper-button dialog-dismiss>Close</paper-button>
-      </div>
-    </paper-dialog>
+    <app-shell-itemdetail id="itemDetailDialog" on-equip="equipFromDialog"></app-shell-itemdetail>
+    <app-shell-about id="aboutDialog"></app-shell-about>
     
     <paper-toast id="appToast" duration="3000" text=""></paper-toast>
     
@@ -706,8 +690,13 @@
           this.addModel(item); //name,item_slot,_model,image
           
         },
-        equipItem: function(e){
-          var item = e.model.item;
+        equipFromDialog: function(e){
+          this.equipItem(e.detail);
+        },
+        itemTap: function(e){
+          this.equipItem(e.model.item);
+        },
+        equipItem: function(item){
           if(item.item_class==='supply_crate'){
             //handle supply crate...
             this.appMessage(item.name+' cannot be equipped.');
@@ -734,7 +723,7 @@
               if(index>=0){
                 bundle.splice(index,1);
                 //this.addItem(this.econItems.items[i]);
-                this.equipItem({model:{item:this.econItems.items[i]},bundle:true});
+                this.equipItem(this.econItems.items[i]);
               }
             }
             console.log('Bundle end: ',bundle);
@@ -769,9 +758,13 @@
         },
         itemInfo: function(e){
           var item = e.model.item;
+          
           console.log(item);
+          //this.appMessage('Item Data logged in the Console');
+          this.$.itemDetailDialog.item = item;
+          this.$.itemDetailDialog.open();
+          
           e.stopPropagation();
-          this.appMessage('Item Data logged in the Console');
         },
         resetHeroModels: function() {
             this.clearModel();

@@ -17,7 +17,7 @@ var Module = {
         
         //handle resize
         GLFW.setCanvasSize = function(){
-          var ssaa = 2; //Super sampling anti-aliasing
+          var ssaa = (window.devicePixelRatio<2 ? 2 : 1); //Super sampling anti-aliasing
           var w = Module['canvas'].clientWidth*window.devicePixelRatio*ssaa;
           var h = Module['canvas'].clientHeight*window.devicePixelRatio*ssaa;
           console.log('onResize',w,h,window.devicePixelRatio);

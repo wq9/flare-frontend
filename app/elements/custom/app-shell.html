@@ -248,6 +248,7 @@
             <paper-icon-button icon="arrow-back" list-toggle></paper-icon-button>
             <div class="title flex">D2Armory Beta</div>
             <paper-icon-button icon="social:share" on-tap="shareIconTap"></paper-icon-button>
+            <paper-icon-button icon="image:photo-camera" on-tap="captureImage"></paper-icon-button>
             <paper-icon-button icon="refresh" on-tap="resetHeroModels"></paper-icon-button>
             <paper-icon-button icon="more-vert" on-tap="openAboutDialog"></paper-icon-button>
           </paper-toolbar>
@@ -255,7 +256,7 @@
           <!-- Main Content -->
           <div class="content fit layout vertical center" id='canvasDiv' on-track="canvasDrag"
             style="text-align:center;">
-            <canvas class="emscripten" id="canvas" oncontextmenu="event.preventDefault()"></canvas>
+            <canvas class="emscripten" id="canvas" on-contextmenu="canvasContextMenu"></canvas>
             <p class="navbar-text" id="status" on-tap="clearStatusDiv" 
               style="position:absolute;width:100%;top: 40%;left:0;
               background-color: rgba(0,0,0,0.5);color:white;">Working...</p>
@@ -933,6 +934,15 @@
         },
         shareIconTap: function(){
           this.appMessage('Sharing functionality not implemented yet!');
+        },
+        captureImage: function(){
+          var y = window.open("about:blank");
+          y.document.write("<img src=\"" +this.$.canvas.toDataURL("image/png") + "\" />");
+          //window.open(this.$.canvas.toDataURL('image/png'));
+        },
+        canvasContextMenu: function(e){
+          //TODO: custom menu
+          e.preventDefault();
         },
         openAboutDialog: function(){
           this.$.aboutDialog.open();

@@ -936,9 +936,8 @@
           this.appMessage('Sharing functionality not implemented yet!');
         },
         captureImage: function(){
-          var y = window.open("about:blank");
-          y.document.write("<img src=\"" +this.$.canvas.toDataURL("image/png") + "\" />");
-          //window.open(this.$.canvas.toDataURL('image/png'));
+          var y = window.open("about:blank"); //TODO open formatted page
+          y.document.write("<img style=\"height:"+this.$.canvas.clientHeight+"px;\" src=\"" +this.$.canvas.toDataURL("image/png") + "\" />");
         },
         canvasContextMenu: function(e){
           //TODO: custom menu

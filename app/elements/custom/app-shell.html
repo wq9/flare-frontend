@@ -394,7 +394,7 @@
           this.ItemSlots = {
             'set':{'SlotIndex':-1,'SlotName':'set'}
           };
-          for(var i in this.hero.ItemSlots){
+          for(i in this.hero.ItemSlots){
             this.ItemSlots[this.hero.ItemSlots[i].SlotName] = this.hero.ItemSlots[i];
           }
           this.set('ItemSlots',this.ItemSlots);
@@ -402,8 +402,8 @@
           
           this.$.econItemsAjax.generateRequest();
         },
-        itemSearchChanged: function(n,o){
-          if(n===""){
+        itemSearchChanged: function(n){
+          if(n===''){
             this.cancelDebouncer('itemFilter');
             this.$.itemGridRepeat.render();
           }
@@ -414,8 +414,8 @@
             }, 300);
           }
         },
-        heroSearchChanged: function(n,o){
-          if(n===""){
+        heroSearchChanged: function(n){
+          if(n===''){
             this.cancelDebouncer('heroFilter');
             this.$.heroGridRepeat.render();
           }
@@ -427,20 +427,20 @@
           }
         },
         itemSearch: function(item){
-          if(this.itemSearchText.length<2) return true;
+          if(this.itemSearchText.length<2) {return true;}
           //regex search
           var regex = new RegExp(this.itemSearchText,'i');
-          if(item.name.search(regex)>=0) return true;
-          if('item_slot' in item && item.item_slot.search(regex)>=0) return true;
-          if('item_rarity' in item && item.item_rarity.search(regex)>=0) return true;
+          if(item.name.search(regex)>=0) {return true;}
+          if('item_slot' in item && item.item_slot.search(regex)>=0) {return true;}
+          if('item_rarity' in item && item.item_rarity.search(regex)>=0) {return true;}
           return false;
         },
         heroFilter: function(item){
-          if(this.heroSearchText.length<1) return true;
+          if(this.heroSearchText.length<1) {return true;}
           //regex search
           var regex = new RegExp('\\b'+this.heroSearchText,'i');
-          if(item.name.search(regex)>=0) return true;
-          if('NameAliases' in item && item.NameAliases.search(regex)>=0) return true;
+          if(item.name.search(regex)>=0) {return true;}
+          if('NameAliases' in item && item.NameAliases.search(regex)>=0) {return true;}
           //if('item_rarity' in item && item.item_rarity.search(regex)>=0) return true;
           return false;
         },
@@ -461,7 +461,7 @@
         openHeroSelectionDialog: function(){
           this.$.heroSelectionDialog.open();
         },
-        heroesResponse: function(r){
+        heroesResponse: function(){
           //console.log(r.detail.response);
           this.splice('heroes',0,0,{
               _id: 'non-hero',
@@ -521,7 +521,7 @@
             }
           }
           
-          for(var i in r.detail.response.items)
+          for(i in r.detail.response.items)
           {
             if('image_inventory' in r.detail.response.items[i]){
               r.detail.response.items[i].image = this.econItemImageUrl(r.detail.response.items[i].image_inventory);
@@ -565,7 +565,7 @@
         heroImageUrl:function(k){
           if(k==='courier'){
             return 'http://cdn.dota2.com/apps/dota2/images/items/courier_lg.png';
-          }else if(k=='ward'){
+          }else if(k==='ward'){
             return 'http://cdn.dota2.com/apps/dota2/images/items/ward_dispenser_lg.png';
           }
           return 'http://media.steampowered.com/apps/dota2/images/heroes/'+k+'_hphover.png';
@@ -741,7 +741,7 @@
                   this.addModel(sentryItem);
                   
                   //observer
-                  item._model += "#observer";
+                  item._model += '#observer';
                   item._position = {x:0, y:0, z:80};
                   break;
               
@@ -791,7 +791,7 @@
               bundle.push(i);
             }
             console.log('Bundle start: ',bundle);
-            for(var i in this.econItems.items){
+            for(i in this.econItems.items){
               var index = bundle.indexOf(this.econItems.items[i].name);
               if(index>=0){
                 bundle.splice(index,1);
@@ -826,10 +826,10 @@
             }
             
             //add to hero.ItemSlots
-            for(var i in this.hero.ItemSlots){
-              if(this.hero.ItemSlots[i].SlotName===item.item_slot){
+            for(var j in this.hero.ItemSlots){
+              if(this.hero.ItemSlots[j].SlotName===item.item_slot){
                 //this.hero.ItemSlots[i]._equipped = item;
-                this.set('hero.ItemSlots.'+i+'._equipped',item);
+                this.set('hero.ItemSlots.'+j+'._equipped',item);
                 break;
               }
             }
@@ -899,7 +899,7 @@
           return title;
         },
         capitalize: function(s){
-          if(s===undefined) return '';
+          if(s===undefined) {return '';}
           return s.charAt(0).toUpperCase()+s.substring(1);
         },
         appMessage: function(msg){
@@ -936,8 +936,9 @@
           this.appMessage('Sharing functionality not implemented yet!');
         },
         captureImage: function(){
-          var y = window.open("about:blank"); //TODO open formatted page
-          y.document.write("<img style=\"height:"+this.$.canvas.clientHeight+"px;\" src=\"" +this.$.canvas.toDataURL("image/png") + "\" />");
+          var y = window.open('about:blank'); //TODO open formatted page
+          y.document.write('<img style=\"height:'+this.$.canvas.clientHeight+'px;\" src=\"' +
+            this.$.canvas.toDataURL('image/png') + '\" />');
         },
         canvasContextMenu: function(e){
           //TODO: custom menu

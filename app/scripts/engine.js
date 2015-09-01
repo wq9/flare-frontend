@@ -5,26 +5,26 @@ var Module = {
         console.log('postRun');
         
         //handle backspace
-        window.removeEventListener("keydown", GLFW.onKeydown, true);
+        window.removeEventListener('keydown', GLFW.onKeydown, true);
         GLFW.onKeydown = function(event) {
             GLFW.onKeyChanged(event, 1);
             if (event.keyCode === 8 || event.keyCode === 9) {
-                if(event.target.tagName === "INPUT") return;
+                if(event.target.tagName === 'INPUT'){return;}
                 event.preventDefault();
             }
         };
-        window.addEventListener("keydown", GLFW.onKeydown, true);
+        window.addEventListener('keydown', GLFW.onKeydown, true);
         
         //handle resize
         GLFW.setCanvasSize = function(){
           var ssaa = (window.devicePixelRatio<2 ? 2 : 1); //Super sampling anti-aliasing
-          var w = Module['canvas'].clientWidth*window.devicePixelRatio*ssaa;
-          var h = Module['canvas'].clientHeight*window.devicePixelRatio*ssaa;
+          var w = Module.canvas.clientWidth*window.devicePixelRatio*ssaa;
+          var h = Module.canvas.clientHeight*window.devicePixelRatio*ssaa;
           console.log('onResize',w,h,window.devicePixelRatio);
           Module.setCanvasSize(w,h,false);
           Module.GL_SetViewPort(w,h);
-        }
-        GLFW.onResize = function(event) {
+        };
+        GLFW.onResize = function() {
           window.clearTimeout(GLFW.setCanvasSizeTimeout); //debounce action
           //wait for drawer to finish transition
           GLFW.setCanvasSizeTimeout = window.setTimeout(GLFW.setCanvasSize, 500);
@@ -69,10 +69,10 @@ var Module = {
 
 window.onerror = function(event) {
     //console.log(event);
-    if(event=='Uncaught Error: File exists') return;    // File exists happens in dual ward model
+    if(event==='Uncaught Error: File exists') {return; }   // File exists happens in dual ward model
     // TODO: do not warn on ok events like simulating an infinite loop or exitStatus
-    Module.setStatus('JavaScript error, open console for more details (Ctrl-Shift-J) <br>\
-        <pre class="app-shell">'+event+'</pre>');
+    Module.setStatus('JavaScript error, open console for more details (Ctrl-Shift-J) <br>'+
+        '<pre class="app-shell">'+event+'</pre>');
     //spinnerElement.style.display = 'none';
     Module.setStatus = function(text) {
         if (text) {Module.printErr('[post-exception status] ' + text);}

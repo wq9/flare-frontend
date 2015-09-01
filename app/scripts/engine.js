@@ -44,20 +44,6 @@ var Module = {
         
         app.ready=true;
     },
-    canvas: (function() {
-        var canvas = document.getElementById('canvas');
-
-        // As a default initial behavior, pop up an alert when webgl context is lost. To make your
-        // application robust, you may want to override this behavior before shipping!
-        // See http://www.khronos.org/registry/webgl/specs/latest/1.0/#5.15.2
-        canvas.addEventListener('webglcontextlost', function(e) {
-            window.alert('WebGL context lost. You will need to reload the page.');
-            e.preventDefault();
-        }, false);
-        
-        //console.log(canvas);
-        return canvas;
-    })(),
     setStatus: function(text) {
         if (!Module.setStatus.last) {
             Module.setStatus.last = {
@@ -80,7 +66,7 @@ var Module = {
         Module.setStatus(left ? 'Starting... (' + (this.totalDependencies - left) + '/' + this.totalDependencies + ')' : 'All downloads complete.');
     }
 };
-Module.setStatus('Loading Engine...');
+
 window.onerror = function(event) {
     //console.log(event);
     if(event=='Uncaught Error: File exists') return;    // File exists happens in dual ward model

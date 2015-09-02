@@ -1,8 +1,9 @@
 var Module = {
     noExitRuntime: true,
+    ready: false,
     preRun: [],
     postRun: function() {
-        console.log('postRun');
+        console.log('Module postRun');
         
         //handle backspace
         window.removeEventListener('keydown', GLFW.onKeydown, true);
@@ -42,7 +43,7 @@ var Module = {
         document.getElementById('canvasDiv').addEventListener('mousewheel', setCanvasZoom, false);
         document.getElementById('canvasDiv').addEventListener('DOMMouseScroll', setCanvasZoom, false);
         
-        app.ready=true;
+        Module.ready=true;
     },
     setStatus: function(text) {
         if (!Module.setStatus.last) {
@@ -58,7 +59,7 @@ var Module = {
         if (m) {
             text = m[1];
         }
-        document.getElementById('status').innerHTML = text;
+        Module.statusDiv.innerHTML = text;
     },
     totalDependencies: 0,
     monitorRunDependencies: function(left) {

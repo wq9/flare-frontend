@@ -2,6 +2,7 @@ body {
   background: black;
   font-family: 'Roboto', 'Helvetica Neue', Helvetica, Arial, sans-serif;
   color: #EEE;
+  cursor: url('/images/cursor/cursor_db_default.png'),auto;
 }
 
 ::-webkit-scrollbar{

@@ -337,25 +337,20 @@
         listeners: {
           //'resize': 'setCanvasSize',
         },
-        setCanvasSize: function(){
-          //obsolete
-          var w = this.$.canvasDiv.clientWidth;
-          var h = this.$.canvasDiv.clientHeight;
-          console.log('Canvas container size: ',w,h);
-          if(w>h){
-            this.$.canvas.style.width=h.toString()+'px';
-            this.$.canvas.style.height='';
-            //w=Math.round(w/h*2048);
-            //h=2048;
-          }else{
-            this.$.canvas.style.height=w.toString()+'px';
-            this.$.canvas.style.width='';
-            //h=Math.round(h/w*2048);
-            //w=2048;
-          }
-          //Set Canvas size if canvas is not forced to be square
-          //Module.setCanvasSize(w,h,false);
+        ready: function(){
+          console.log('app-shell ready');
+          Module.canvas = this.$.canvas;
+          Module.statusDiv = this.$.status;
+          Module.canvas.addEventListener('webglcontextlost', function(e) {
+              window.alert('WebGL context lost. You will need to reload the page.');
+              e.preventDefault();
+          }, false);
+          Module.setStatus('Loading Engine...');
           
+          var fileref2=document.createElement('script');
+          fileref2.setAttribute('type','text/javascript');
+          fileref2.setAttribute('src', 'raw.js');
+          document.getElementsByTagName('head')[0].appendChild(fileref2);
         },
         observers: [
           //'modelsChanged(models.*)'
@@ -854,9 +849,9 @@
         },
         resetHeroModels: function() {
             //wait for engine
-            if(!app.ready){
+            if(!Module.ready){
               this.appMessage('Loading Engine...');
-              this.async(this.resetHeroModels,4000);
+              this.async(this.resetHeroModels,3000);
               return;
             }
             
